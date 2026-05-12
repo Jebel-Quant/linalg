@@ -9,9 +9,21 @@ dependencies = [
     "pandas>=2.0.0",
 ]
 authors = [{name = "Thomas Schmelzer", email = "thomas.schmelzer@gmail.com"}]
+license = "MIT"
+license-files = ["LICENSE"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Financial and Insurance Industry",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering :: Mathematics",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+]
 
 [project.urls]
-repository = "https://github.com/jebel-quant/linalg"
+repository = "https://github.com/Jebel-Quant/linalg"
 
 [dependency-groups]
 dev = [
@@ -25,5 +37,62 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/cvx"]
 
+[tool.hatch.build]
+include = [
+    "LICENSE",
+    "README.md",
+    "src/cvx/linalg",
+]
+
 [tool.ty.environment]
 extra-paths = ["stubs"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+]
+
+[tool.interrogate]
+fail-under = 100
+ignore-init-method = true
+ignore-magic = true
+
+[tool.deptry.package_module_name_map]
+numpy = "numpy"
+pandas = "pandas"
+
+[tool.bumpversion]
+parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)(?:[-]?(?P<release>[a-z]+)[\\.]?(?P<pre_n>\\d+))?(?:\\+build\\.(?P<build_n>\\d+))?"
+serialize = ["{major}.{minor}.{patch}-{release}.{pre_n}+build.{build_n}", "{major}.{minor}.{patch}+build.{build_n}", "{major}.{minor}.{patch}-{release}.{pre_n}", "{major}.{minor}.{patch}"]
+search = "{current_version}"
+replace = "{new_version}"
+regex = false
+ignore_missing_version = false
+ignore_missing_files = false
+tag = true
+sign_tags = false
+tag_name = "v{new_version}"
+tag_message = "Bump version: {current_version} → {new_version}"
+allow_dirty = false
+commit = true
+message = "Chore: bump version {current_version} → {new_version}"
+commit_args = ""
+pre_commit_hooks = ["uv sync", "git add uv.lock"]
+
+[tool.bumpversion.parts.release]
+optional_value = "prod"
+values = [
+    "dev",
+    "alpha",
+    "a",
+    "beta",
+    "b",
+    "rc",
+    "prod"
+]
+
+[[tool.bumpversion.files]]
+filename = "pyproject.toml"
+search = 'version = "{current_version}"'
+replace = 'version = "{new_version}"'
