@@ -44,9 +44,6 @@ include = [
     "src/cvx/linalg",
 ]
 
-[tool.ty.environment]
-extra-paths = ["stubs"]
-
 [tool.coverage.report]
 exclude_lines = [
     "pragma: no cover",
