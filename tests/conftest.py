@@ -1,4 +1,8 @@
-"""Pytest configuration and fixtures for the linalg test suite."""
+"""Pytest configuration and fixtures for the linalg test suite.
+
+Security Notes:
+- S101 (assert usage): Asserts are appropriate in test code for validating conditions.
+"""
 
 from __future__ import annotations
 

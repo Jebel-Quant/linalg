@@ -116,27 +116,6 @@ def valid(matrix: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         array([[2. , 0.5],
                [0.5, 3. ]])
 
-        Using with portfolio optimization (skip assets with missing data):
-
-        >>> from cvx.risk.sample import SampleCovariance
-        >>> # Full covariance has invalid data for asset 1
-        >>> full_cov = np.array([[1.0, np.nan, 0.2],
-        ...                      [np.nan, np.nan, np.nan],
-        ...                      [0.2, np.nan, 1.0]])
-        >>> v, valid_cov = valid(full_cov)
-        >>> v
-        array([ True, False,  True])
-        >>> # Optimize only valid assets
-        >>> model = SampleCovariance(num=2)
-        >>> model.update(
-        ...     cov=valid_cov,
-        ...     lower_assets=np.zeros(2),
-        ...     upper_assets=np.ones(2)
-        ... )
-        >>> risk = model.estimate(np.array([0.5, 0.5]))
-        >>> isinstance(risk, float)
-        True
-
         Non-square matrix raises assertion:
 
         >>> try:

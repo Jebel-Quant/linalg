@@ -133,20 +133,6 @@ def pca(returns: pd.DataFrame, n_components: int = 10) -> PCA:
         >>> bool(np.allclose(factor_corr, np.eye(3), atol=0.1))
         True
 
-        Using PCA results for a factor model:
-
-        >>> from cvx.risk.factor import FactorModel
-        >>> model = FactorModel(assets=10, k=3)
-        >>> model.update(
-        ...     exposure=result.exposure.values,
-        ...     cov=result.cov.values,
-        ...     idiosyncratic_risk=result.idiosyncratic.std().values,
-        ...     lower_assets=np.zeros(10),
-        ...     upper_assets=np.ones(10),
-        ...     lower_factors=-np.ones(3),
-        ...     upper_factors=np.ones(3)
-        ... )
-
         Verifying variance decomposition (systematic + idiosyncratic = total):
 
         >>> np.random.seed(123)

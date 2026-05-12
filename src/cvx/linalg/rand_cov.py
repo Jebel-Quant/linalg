@@ -64,23 +64,6 @@ def rand_cov(n: int, seed: int | None = None) -> np.ndarray:
         >>> np.allclose(cov1, cov2)
         True
 
-        Use in portfolio optimization:
-
-        >>> from cvx.risk.sample import SampleCovariance
-        >>> from cvx.risk.portfolio import minrisk_problem
-        >>> from cvx.core.variable import Variable
-        >>> model = SampleCovariance(num=4)
-        >>> cov = rand_cov(4, seed=42)
-        >>> model.update(
-        ...     cov=cov,
-        ...     lower_assets=np.zeros(4),
-        ...     upper_assets=np.ones(4)
-        ... )
-        >>> weights = Variable(4)
-        >>> risk = model.estimate(np.ones(4) / 4)
-        >>> isinstance(risk, float)
-        True
-
         Verify positive definiteness via Cholesky decomposition:
 
         >>> cov = rand_cov(5, seed=123)
@@ -110,28 +93,6 @@ def rand_cov(n: int, seed: int | None = None) -> np.ndarray:
         >>> cov_a = rand_cov(2, seed=None)
         >>> cov_b = rand_cov(2, seed=None)
         >>> cov_a.shape == cov_b.shape == (2, 2)
-        True
-
-        Monte Carlo simulation example:
-
-        >>> from cvx.risk.portfolio import minrisk_problem
-        >>> from cvx.core.variable import Variable
-        >>> results = []
-        >>> for i in range(5):
-        ...     cov = rand_cov(3, seed=i)
-        ...     model = SampleCovariance(num=3)
-        ...     model.update(
-        ...         cov=cov,
-        ...         lower_assets=np.zeros(3),
-        ...         upper_assets=np.ones(3)
-        ...     )
-        ...     weights = Variable(3)
-        ...     prob = minrisk_problem(model, weights)
-        ...     prob.solve()
-        ...     results.append(prob.value)
-        >>> len(results)
-        5
-        >>> all(r > 0 for r in results)  # All risks are positive
         True
 
     Note:
