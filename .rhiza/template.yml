@@ -1,0 +1,7 @@
+repository: "jebel-quant/rhiza"
+ref: "v0.10.3"
+
+templates:
+  - github
+  - legal
+  - tests
