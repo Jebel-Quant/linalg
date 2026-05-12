@@ -1,0 +1,48 @@
+line-length = 120
+target-version = "py311"
+
+[lint]
+select = [
+    "D",
+    "E",
+    "F",
+    "I",
+    "N",
+    "W",
+    "UP",
+]
+
+extend-select = [
+    "D105",
+    "D107",
+    "B",
+    "C4",
+    "SIM",
+    "PT",
+    "RUF",
+    "S",
+    "TRY",
+    "ICN",
+]
+
+ignore = [
+    "D203",
+    "D213",
+]
+
+[lint.pydocstyle]
+convention = "google"
+
+[format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+
+[lint.per-file-ignores]
+"tests/**/*.py" = [
+    "S101",
+    "ERA001",
+    "PLR2004",
+    "RUF002",
+    "RUF012",
+]
