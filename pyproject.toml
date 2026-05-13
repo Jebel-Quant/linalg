@@ -41,11 +41,11 @@ include = [
     "src/cvx/linalg",
 ]
 
-[tool.coverage.report]
-exclude_lines = [
-    "pragma: no cover",
-    "if TYPE_CHECKING:",
-]
+#[tool.coverage.report]
+#exclude_lines = [
+#    "pragma: no cover",
+#    "if TYPE_CHECKING:",
+#]
 
 [tool.interrogate]
 fail-under = 100
