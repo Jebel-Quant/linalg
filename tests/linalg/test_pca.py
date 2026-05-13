@@ -3,14 +3,15 @@
 from __future__ import annotations
 
 import numpy as np
-import pandas as pd
+import polars as pl
+import polars.selectors as cs
 import pytest
 
 from cvx.linalg import pca
 
 
 @pytest.fixture
-def returns(resource_dir) -> pd.DataFrame:
+def returns(resource_dir) -> pl.DataFrame:
     """Pytest fixture that provides stock return data for testing.
 
     This fixture loads stock price data from a CSV file, calculates returns
@@ -20,14 +21,14 @@ def returns(resource_dir) -> pd.DataFrame:
         resource_dir: Pytest fixture providing the path to the test resources directory
 
     Returns:
-        pandas.DataFrame: DataFrame containing stock returns
+        polars.DataFrame: DataFrame containing stock returns
 
     """
-    prices = pd.read_csv(resource_dir / "stock_prices.csv", index_col=0, header=0, parse_dates=True)
-    return prices.pct_change().fillna(0.0)
+    prices = pl.read_csv(resource_dir / "stock_prices.csv", try_parse_dates=True)
+    return prices.select(cs.numeric().pct_change()).fill_nan(0.0).fill_null(0.0)
 
 
-def test_pca(returns: pd.DataFrame) -> None:
+def test_pca(returns: pl.DataFrame) -> None:
     """Test that the pca function correctly calculates the principal components.
 
     This test verifies that:

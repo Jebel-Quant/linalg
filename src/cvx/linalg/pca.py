@@ -21,13 +21,13 @@ Example:
     Perform PCA on stock returns:
 
     >>> import numpy as np
-    >>> import pandas as pd
+    >>> import polars as pl
     >>> from cvx.linalg import pca
     >>> # Create sample returns data
     >>> np.random.seed(42)
-    >>> returns = pd.DataFrame(
+    >>> returns = pl.DataFrame(
     ...     np.random.randn(100, 5),
-    ...     columns=['A', 'B', 'C', 'D', 'E']
+    ...     schema=['A', 'B', 'C', 'D', 'E']
     ... )
     >>> # Compute PCA with 3 components
     >>> result = pca(returns, n_components=3)
@@ -48,7 +48,7 @@ from __future__ import annotations
 from collections import namedtuple
 
 import numpy as np
-import pandas as pd
+import polars as pl
 
 PCA = namedtuple(
     "PCA",
@@ -75,18 +75,18 @@ Attributes:
 
 Example:
     >>> import numpy as np
-    >>> import pandas as pd
+    >>> import polars as pl
     >>> from cvx.linalg import pca
     >>> np.random.seed(42)
-    >>> returns = pd.DataFrame(np.random.randn(50, 4))
+    >>> returns = pl.DataFrame(np.random.randn(50, 4))
     >>> result = pca(returns, n_components=2)
     >>> # Check explained variance sums to less than 1
     >>> result.explained_variance.sum() < 1
     True
     >>> # Systematic + idiosyncratic approximately equals original
     >>> np.allclose(
-    ...     result.systematic.values + result.idiosyncratic.values,
-    ...     returns.values,
+    ...     result.systematic.to_numpy() + result.idiosyncratic.to_numpy(),
+    ...     returns.to_numpy(),
     ...     atol=1e-10
     ... )
     True
@@ -94,7 +94,7 @@ Example:
 """
 
 
-def pca(returns: pd.DataFrame, n_components: int = 10) -> PCA:
+def pca(returns: pl.DataFrame, n_components: int = 10) -> PCA:
     """Compute the first n principal components for a return matrix using SVD.
 
     This function performs Principal Component Analysis on asset returns to
@@ -119,29 +119,29 @@ def pca(returns: pd.DataFrame, n_components: int = 10) -> PCA:
         Basic PCA on synthetic returns:
 
         >>> import numpy as np
-        >>> import pandas as pd
+        >>> import polars as pl
         >>> from cvx.linalg import pca
         >>> np.random.seed(42)
         >>> # Create returns with 100 periods and 10 assets
-        >>> returns = pd.DataFrame(np.random.randn(100, 10))
+        >>> returns = pl.DataFrame(np.random.randn(100, 10))
         >>> result = pca(returns, n_components=3)
         >>> # First component explains most variance
         >>> bool(result.explained_variance[0] > result.explained_variance[1])
         True
         >>> # Factors are orthogonal
-        >>> factor_corr = np.corrcoef(result.factors.T)
+        >>> factor_corr = np.corrcoef(result.factors.to_numpy().T)
         >>> bool(np.allclose(factor_corr, np.eye(3), atol=0.1))
         True
 
         Verifying variance decomposition (systematic + idiosyncratic = total):
 
         >>> np.random.seed(123)
-        >>> returns = pd.DataFrame(np.random.randn(50, 5))
+        >>> returns = pl.DataFrame(np.random.randn(50, 5))
         >>> result = pca(returns, n_components=3)
         >>> # Systematic variance + idiosyncratic variance ≈ total variance
-        >>> total_var = returns.var().sum()
-        >>> systematic_var = result.systematic.var().sum()
-        >>> idio_var = result.idiosyncratic.var().sum()
+        >>> total_var = np.var(returns.to_numpy(), axis=0, ddof=1).sum()
+        >>> systematic_var = np.var(result.systematic.to_numpy(), axis=0, ddof=1).sum()
+        >>> idio_var = np.var(result.idiosyncratic.to_numpy(), axis=0, ddof=1).sum()
         >>> # Note: small differences due to demeaning
         >>> bool(np.isclose(systematic_var + idio_var, total_var, rtol=0.1))
         True
@@ -149,10 +149,10 @@ def pca(returns: pd.DataFrame, n_components: int = 10) -> PCA:
         Exposure matrix has orthonormal rows (loadings are orthogonal):
 
         >>> np.random.seed(42)
-        >>> returns = pd.DataFrame(np.random.randn(100, 6))
+        >>> returns = pl.DataFrame(np.random.randn(100, 6))
         >>> result = pca(returns, n_components=3)
         >>> # V^T @ V should be identity (orthonormal loadings)
-        >>> VtV = result.exposure.values @ result.exposure.values.T
+        >>> VtV = result.exposure.to_numpy() @ result.exposure.to_numpy().T
         >>> bool(np.allclose(VtV, np.eye(3), atol=1e-10))
         True
 
@@ -165,9 +165,9 @@ def pca(returns: pd.DataFrame, n_components: int = 10) -> PCA:
         Reconstructing returns from factors and exposures:
 
         >>> # systematic = factors @ exposure (plus mean)
-        >>> reconstructed = result.factors.values @ result.exposure.values
+        >>> reconstructed = result.factors.to_numpy() @ result.exposure.to_numpy()
         >>> # Should match systematic (centered part)
-        >>> centered_systematic = result.systematic.values - returns.values.mean(axis=0)
+        >>> centered_systematic = result.systematic.to_numpy() - returns.to_numpy().mean(axis=0)
         >>> bool(np.allclose(reconstructed, centered_systematic, atol=1e-10))
         True
 
@@ -186,28 +186,28 @@ def pca(returns: pd.DataFrame, n_components: int = 10) -> PCA:
     s = s_full[:n_components]
     vt = vt[:n_components, :]
 
+    pc_names = [f"PC{i + 1}" for i in range(n_components)]
+
     # Factor exposures (loadings): each component's weight per asset
-    exposure = pd.DataFrame(vt, columns=returns.columns)
+    exposure = pl.DataFrame(vt, schema=returns.columns)
 
     # Factor returns (scores): projection of data onto components
-    factors = pd.DataFrame(u * s, index=returns.index, columns=[f"PC{i + 1}" for i in range(n_components)])
+    factors = pl.DataFrame(u * s, schema=pc_names)
 
     # Explained variance ratio (normalize by total variance across ALL components)
     explained_variance = (s**2) / np.sum(s_full**2)
 
     # Covariance of factor returns
-    cov = factors.cov()
+    cov = pl.DataFrame(np.cov((u * s).T), schema=pc_names)
 
     # Systematic + Idiosyncratic returns
-    systematic = pd.DataFrame(
-        data=(u * s) @ vt + x_mean,
-        index=returns.index,
-        columns=returns.columns,
+    systematic = pl.DataFrame(
+        (u * s) @ vt + x_mean,
+        schema=returns.columns,
     )
-    idiosyncratic = pd.DataFrame(
-        data=x_centered - (u * s) @ vt,
-        index=returns.index,
-        columns=returns.columns,
+    idiosyncratic = pl.DataFrame(
+        x_centered - (u * s) @ vt,
+        schema=returns.columns,
     )
 
     return PCA(
