@@ -26,9 +26,8 @@ from __future__ import annotations
 from collections import namedtuple
 
 import numpy as np
-import numpy.typing as npt
 
-Matrix = npt.NDArray[np.float64]
+Matrix = np.ndarray
 
 PCA = namedtuple(
     "PCA",
