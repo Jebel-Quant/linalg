@@ -93,12 +93,9 @@ def pca(returns: Matrix, n_components: int = 10) -> PCA:
         ...     for i in range(len(result.explained_variance)-1))
         True
         >>> reconstructed = result.factors @ result.exposure
-        >>> np.random.seed(42)
-        >>> returns = np.random.randn(100, 10)
-        >>> result = pca(returns, n_components=3)
         >>> centered_systematic = result.systematic - returns.mean(axis=0)
         >>> bool(np.allclose(reconstructed, centered_systematic, atol=1e-10))
-        False
+        True
 
     """
     x_mean = returns.mean(axis=0)
