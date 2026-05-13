@@ -3,32 +3,37 @@
 from __future__ import annotations
 
 import numpy as np
-import polars as pl
-import polars.selectors as cs
 import pytest
 
 from cvx.linalg import pca
 
 
 @pytest.fixture
-def returns(resource_dir) -> pl.DataFrame:
+def returns(resource_dir) -> np.ndarray:
     """Pytest fixture that provides stock return data for testing.
 
-    This fixture loads stock price data from a CSV file, calculates returns
-    using percentage change, and fills any NaN values with zeros.
+    Loads stock prices from CSV, computes percentage returns, and fills
+    the first row of NaNs (from pct_change) with zeros.
 
     Args:
         resource_dir: Pytest fixture providing the path to the test resources directory
 
     Returns:
-        polars.DataFrame: DataFrame containing stock returns
+        numpy.ndarray: Array containing stock returns
 
     """
-    prices = pl.read_csv(resource_dir / "stock_prices.csv", try_parse_dates=True)
-    return prices.select(cs.numeric().pct_change()).fill_nan(0.0).fill_null(0.0)
+    prices = np.genfromtxt(
+        resource_dir / "stock_prices.csv",
+        delimiter=",",
+        skip_header=1,
+        usecols=range(1, 21),
+    )
+    ret = np.zeros_like(prices)
+    ret[1:] = prices[1:] / prices[:-1] - 1.0
+    return np.nan_to_num(ret, nan=0.0)
 
 
-def test_pca(returns: pl.DataFrame) -> None:
+def test_pca(returns: np.ndarray) -> None:
     """Test that the pca function correctly calculates the principal components.
 
     This test verifies that:
