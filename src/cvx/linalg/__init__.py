@@ -24,4 +24,5 @@ Functions:
 from .cholesky import cholesky as cholesky
 from .pca import pca as pca
 from .rand_cov import rand_cov as rand_cov
+from .types import Matrix as Matrix
 from .valid import valid as valid
