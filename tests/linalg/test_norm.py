@@ -43,3 +43,15 @@ def test_norms_require_matching_dimensions() -> None:
 
     with pytest.raises(AssertionError):
         inv_a_norm(vector, matrix)
+
+
+def test_norms_require_square_matrix() -> None:
+    """Test that the norm utilities reject non-square matrices."""
+    vector = np.array([1.0, 2.0])
+    matrix = np.array([[2.0, 0.0, 1.0], [0.0, 3.0, 4.0]])
+
+    with pytest.raises(AssertionError):
+        a_norm(vector, matrix)
+
+    with pytest.raises(AssertionError):
+        inv_a_norm(vector, matrix)
