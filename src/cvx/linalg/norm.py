@@ -33,7 +33,8 @@ def a_norm(vector: np.ndarray, matrix: np.ndarray | None = None) -> float:
 
     mask, submatrix = valid(matrix)
     if mask.any():
-        return float(np.sqrt(np.dot(vector[mask], np.dot(submatrix, vector[mask]))))
+        filtered_vector = vector[mask]
+        return float(np.sqrt(filtered_vector @ submatrix @ filtered_vector))
 
     return float("nan")
 
@@ -64,6 +65,8 @@ def inv_a_norm(vector: np.ndarray, matrix: np.ndarray | None = None) -> float:
 
     mask, submatrix = valid(matrix)
     if mask.any():
-        return float(np.sqrt(np.dot(vector[mask], np.linalg.solve(submatrix, vector[mask]))))
+        filtered_vector = vector[mask]
+        solved = np.linalg.solve(submatrix, filtered_vector)
+        return float(np.sqrt(filtered_vector @ solved))
 
     return float("nan")
