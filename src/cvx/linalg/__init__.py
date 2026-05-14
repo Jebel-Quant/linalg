@@ -1,12 +1,12 @@
 """Linear algebra utilities for risk models.
 
 This subpackage provides linear algebra utilities commonly used in risk modeling,
-including Cholesky decomposition, Principal Component Analysis, and matrix
-validation.
+including Cholesky decomposition, Principal Component Analysis, matrix norms,
+linear-system solving, and matrix validation.
 
 Example:
     >>> import numpy as np
-    >>> from cvx.linalg import a_norm, cholesky, pca, rand_cov, solve, valid
+    >>> from cvx.linalg import a_norm, cholesky, inv_a_norm, pca, rand_cov, solve, valid
     >>> # Cholesky decomposition
     >>> cov = np.array([[4.0, 2.0], [2.0, 5.0]])
     >>> R = cholesky(cov)
@@ -16,6 +16,7 @@ Example:
 Functions:
     a_norm: Compute the matrix norm of a vector
     cholesky: Compute upper triangular Cholesky decomposition
+    inv_a_norm: Compute the inverse matrix norm of a vector
     pca: Compute principal components of return data
     rand_cov: Generate a random positive semi-definite covariance matrix
     solve: Solve linear systems with NaN-aware matrix filtering
