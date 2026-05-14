@@ -26,3 +26,12 @@ def test_solve_requires_matching_dimensions() -> None:
 
     with pytest.raises(AssertionError):
         solve(matrix, rhs)
+
+
+def test_solve_requires_square_matrix() -> None:
+    """Test that solve rejects non-square matrices."""
+    matrix = np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
+    rhs = np.array([1.0, 2.0])
+
+    with pytest.raises(AssertionError):
+        solve(matrix, rhs)
