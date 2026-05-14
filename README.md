@@ -1,5 +1,13 @@
 # cvx-linalg
 
+[![PyPI version](https://badge.fury.io/py/cvx-linalg.svg)](https://badge.fury.io/py/cvx-linalg)
+[![Python](https://img.shields.io/badge/python-3.11%2B-blue)](https://pypi.org/project/cvx-linalg/)
+[![Downloads](https://static.pepy.tech/personalized-badge/cvx-linalg?period=month&units=international_system&left_color=black&right_color=orange&left_text=PyPI%20downloads%20per%20month)](https://pepy.tech/project/cvx-linalg)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/Jebel-Quant/linalg/blob/main/LICENSE)
+[![CodeFactor](https://www.codefactor.io/repository/github/jebel-quant/linalg/badge)](https://www.codefactor.io/repository/github/jebel-quant/linalg)
+[![Rhiza](https://img.shields.io/badge/dynamic/yaml?url=https%3A%2F%2Fraw.githubusercontent.com%2FJebel-Quant%2Flinalg%2Fmain%2F.rhiza%2Ftemplate.yml&query=%24.ref&label=rhiza)](https://github.com/jebel-quant/rhiza)
+[![Coverage](https://jebel-quant.github.io/linalg/coverage-badge.svg)](https://jebel-quant.github.io/linalg/reports/html-coverage/)
+
 Linear algebra utilities for portfolio optimization, part of the [jebel-quant](https://github.com/jebel-quant) ecosystem.
 
 ## Installation
