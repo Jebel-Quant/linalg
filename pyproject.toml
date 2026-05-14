@@ -40,6 +40,11 @@ include = [
     "src/cvx/linalg",
 ]
 
+[dependency-groups]
+dev = [
+    "pandas>=2.0.0",
+]
+
 [tool.interrogate]
 fail-under = 100
 ignore-init-method = true
