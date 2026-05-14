@@ -11,13 +11,14 @@ pip install cvx-linalg
 ## Usage
 
 ```python
-from cvx.linalg import a_norm, cholesky, inv_a_norm, pca, rand_cov, solve, valid
+from cvx.linalg import a_norm, cholesky, ewm_covariance, inv_a_norm, pca, rand_cov, solve, valid
 ```
 
 ## Functions
 
 - **`a_norm(vector, matrix=None)`** — Euclidean norm or NaN-aware matrix norm
 - **`cholesky(cov)`** — Upper triangular Cholesky factor R such that R.T @ R = cov
+- **`ewm_covariance(data, assets, index_col, window, is_halflife, warmup)`** — Exponentially weighted covariance matrices from a Polars DataFrame
 - **`inv_a_norm(vector, matrix=None)`** — Euclidean norm or inverse NaN-aware matrix norm
 - **`pca(returns, n_components)`** — Principal Component Analysis via SVD
 - **`rand_cov(n, seed)`** — Random positive semi-definite covariance matrix
