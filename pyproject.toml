@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "numpy>=2.0.0",
+    "polars>=1.0.0",
 ]
 authors = [{name = "Thomas Schmelzer", email = "thomas.schmelzer@gmail.com"}]
 license = "MIT"
@@ -38,6 +39,11 @@ include = [
     "LICENSE",
     "README.md",
     "src/cvx/linalg",
+]
+
+[dependency-groups]
+dev = [
+    "pandas>=2.0.0",
 ]
 
 [tool.interrogate]

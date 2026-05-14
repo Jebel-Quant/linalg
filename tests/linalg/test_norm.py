@@ -55,3 +55,26 @@ def test_norms_require_square_matrix() -> None:
 
     with pytest.raises(AssertionError):
         inv_a_norm(vector, matrix)
+
+
+def test_inv_a_norm_without_matrix_ignores_non_finite_entries() -> None:
+    """Test that inv_a_norm without a matrix falls back to the Euclidean norm."""
+    vector = np.array([3.0, np.nan, 4.0])
+
+    assert inv_a_norm(vector) == pytest.approx(5.0)
+
+
+def test_a_norm_all_invalid_matrix_returns_nan() -> None:
+    """Test that a_norm returns NaN when no matrix diagonal entry is finite."""
+    vector = np.array([1.0, 2.0])
+    matrix = np.array([[np.nan, 0.0], [0.0, np.nan]])
+
+    assert math.isnan(a_norm(vector, matrix))
+
+
+def test_inv_a_norm_all_invalid_matrix_returns_nan() -> None:
+    """Test that inv_a_norm returns NaN when no matrix diagonal entry is finite."""
+    vector = np.array([1.0, 2.0])
+    matrix = np.array([[np.nan, 0.0], [0.0, np.nan]])
+
+    assert math.isnan(inv_a_norm(vector, matrix))
