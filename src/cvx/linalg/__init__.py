@@ -16,6 +16,7 @@ Example:
 Functions:
     a_norm: Compute the matrix norm of a vector
     cholesky: Compute upper triangular Cholesky decomposition
+    cond: Return the condition number of a matrix (NaN-aware)
     det: Compute the determinant of a square matrix
     eigh: Compute eigenvalues and eigenvectors of a symmetric/Hermitian matrix
     eigvalsh: Compute eigenvalues of a symmetric/Hermitian matrix
@@ -43,6 +44,7 @@ from .exceptions import IllConditionedMatrixWarning as IllConditionedMatrixWarni
 from .exceptions import NonSquareMatrixError as NonSquareMatrixError
 from .exceptions import SingularMatrixError as SingularMatrixError
 from .exceptions import check_and_warn_condition as check_and_warn_condition
+from .exceptions import cond as cond
 from .inv import inv as inv
 from .norm import a_norm as a_norm
 from .norm import inv_a_norm as inv_a_norm

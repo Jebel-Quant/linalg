@@ -2,11 +2,17 @@
 
 from __future__ import annotations
 
+import math
+
+import numpy as np
+import pytest
+
 from cvx.linalg import (
     DimensionMismatchError,
     IllConditionedMatrixWarning,
     NonSquareMatrixError,
     SingularMatrixError,
+    cond,
 )
 
 
@@ -38,3 +44,38 @@ def test_dimension_mismatch_error_attributes() -> None:
 def test_ill_conditioned_warning_is_user_warning_subclass() -> None:
     """Test that IllConditionedMatrixWarning inherits from UserWarning."""
     assert issubclass(IllConditionedMatrixWarning, UserWarning)
+
+
+# ---------------------------------------------------------------------------
+# cond()
+# ---------------------------------------------------------------------------
+
+
+def test_cond_identity() -> None:
+    """Condition number of the identity matrix is 1."""
+    assert cond(np.eye(3)) == pytest.approx(1.0)
+
+
+def test_cond_diagonal() -> None:
+    """Condition number of a diagonal matrix equals max/min eigenvalue ratio."""
+    m = np.diag([1.0, 100.0])
+    assert cond(m) == pytest.approx(100.0)
+
+
+def test_cond_p_norm() -> None:
+    """cond() respects the optional p parameter."""
+    m = np.diag([1.0, 1e6])
+    result = cond(m, p=1)
+    assert result == pytest.approx(np.linalg.cond(m, p=1))
+
+
+def test_cond_nan_matrix_returns_nan() -> None:
+    """cond() returns nan when the matrix contains NaN entries."""
+    m = np.array([[float("nan"), 1.0], [1.0, 2.0]])
+    assert math.isnan(cond(m))
+
+
+def test_cond_inf_matrix_returns_nan() -> None:
+    """cond() returns nan when the matrix contains infinite entries."""
+    m = np.array([[float("inf"), 0.0], [0.0, 1.0]])
+    assert math.isnan(cond(m))
