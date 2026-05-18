@@ -8,6 +8,25 @@ from typing import Literal
 import numpy as np
 
 
+class NotAMatrixError(TypeError):
+    """Raised when a 2-D matrix is required but the input has a different number of dimensions.
+
+    Args:
+        ndim: Actual number of dimensions of the offending array.
+
+    Examples:
+        >>> raise NotAMatrixError(3)
+        Traceback (most recent call last):
+            ...
+        cvx.linalg.exceptions.NotAMatrixError: eigvals() expected a 2-D matrix, got 3-D input.
+    """
+
+    def __init__(self, ndim: int) -> None:
+        """Initialize with the actual number of dimensions."""
+        super().__init__(f"eigvals() expected a 2-D matrix, got {ndim}-D input.")
+        self.ndim = ndim
+
+
 class NonSquareMatrixError(ValueError):
     """Raised when a square matrix is required but the input is not square.
 
