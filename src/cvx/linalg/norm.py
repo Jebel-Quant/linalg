@@ -17,6 +17,36 @@ from .solve import _DEFAULT_COND_THRESHOLD
 from .valid import valid
 
 
+def norm(
+    x: np.ndarray,
+    ord: int | float | str | None = None,
+) -> float:
+    """Compute the norm of a vector or matrix, ignoring non-finite entries.
+
+    Non-finite entries (NaN, inf) are treated as zero before computing the norm,
+    so they contribute nothing to the result. Supports all ``ord`` values accepted
+    by ``np.linalg.norm``.
+
+    Args:
+        x: Input array (1-D vector or 2-D matrix).
+        ord: Order of the norm. See ``np.linalg.norm`` for valid values.
+            Common choices: ``None`` (default 2-norm for vectors, Frobenius for
+            matrices), ``1``, ``2``, ``np.inf``, ``'fro'``, ``'nuc'``.
+
+    Returns:
+        The norm as a float.
+
+    Example:
+        >>> import numpy as np
+        >>> from cvx.linalg import norm
+        >>> norm(np.array([3.0, np.nan, 4.0]))
+        5.0
+        >>> norm(np.array([[1.0, np.nan], [np.nan, 1.0]]), ord='fro')
+        1.4142135623730951
+    """
+    return float(np.linalg.norm(np.where(np.isfinite(x), x, 0.0), ord=ord))
+
+
 def a_norm(vector: np.ndarray, matrix: np.ndarray | None = None) -> float:
     """Calculate the generalized norm of a vector with respect to a matrix.
 
