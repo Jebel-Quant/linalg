@@ -21,7 +21,7 @@ pip install cvx-linalg
 ```python
 from cvx.linalg import (
     a_norm, cholesky, ewm_covariance,
-    inv, inv_a_norm, is_positive_definite, pca, rand_cov, solve, svd, valid,
+    inv, inv_a_norm, is_positive_definite, pca, qr, rand_cov, solve, valid,
 )
 ```
 
@@ -35,6 +35,7 @@ from cvx.linalg import (
 - **[`inv_a_norm(vector, matrix=None)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/norm.py#L58)** — Euclidean norm or inverse NaN-aware matrix norm
 - **[`is_positive_definite(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/cholesky.py#L57)** — Return True if the matrix is symmetric positive-definite
 - **[`pca(returns, n_components)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/pca.py#L61)** — Principal Component Analysis via SVD
+- **[`qr(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/qr.py#L10)** — Reduced QR decomposition, matching `np.linalg.qr(mode='reduced')`
 - **[`rand_cov(n, seed)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/rand_cov.py#L29)** — Random positive semi-definite covariance matrix
 - **[`solve(matrix, rhs, cond_threshold=1e12)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/solve.py#L22)** — Solve a linear system restricted to valid rows/columns; NaN entries are returned for invalid positions
 - **[`svd(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/svd.py#L11)** — Raw compact singular value decomposition via `np.linalg.svd(full_matrices=False)`
