@@ -26,6 +26,8 @@ from __future__ import annotations
 
 import numpy as np
 
+from .exceptions import NonSquareMatrixError
+
 
 def valid(matrix: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """Extract the valid subset of a matrix by removing rows/columns with non-finite values.
@@ -49,7 +51,7 @@ def valid(matrix: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
               Shape is (k, k) where k is the number of True values in v.
 
     Raises:
-        AssertionError: If the input matrix is not square (n x n).
+        NonSquareMatrixError: If the input matrix is not square (n x n).
 
     Example:
         Basic usage with a covariance matrix:
@@ -103,13 +105,13 @@ def valid(matrix: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         array([[2. , 0.5],
                [0.5, 3. ]])
 
-        Non-square matrix raises assertion:
+        Non-square matrix raises NonSquareMatrixError:
 
         >>> try:
         ...     valid(np.array([[1, 2, 3], [4, 5, 6]]))
-        ... except AssertionError:
-        ...     print("Caught assertion error for non-square matrix")
-        Caught assertion error for non-square matrix
+        ... except NonSquareMatrixError:
+        ...     print("Caught NonSquareMatrixError for non-square matrix")
+        Caught NonSquareMatrixError for non-square matrix
 
     Note:
         The function checks only the diagonal elements for validity. It assumes
@@ -117,9 +119,8 @@ def valid(matrix: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         a common assumption for covariance matrices.
 
     """
-    # make sure matrix  is quadratic
     if matrix.shape[0] != matrix.shape[1]:
-        raise AssertionError
+        raise NonSquareMatrixError(matrix.shape[0], matrix.shape[1])
 
     v = np.isfinite(np.diag(matrix))
     return v, matrix[:, v][v]
