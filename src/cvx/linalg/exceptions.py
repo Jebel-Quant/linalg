@@ -91,7 +91,7 @@ def check_and_warn_condition(matrix: np.ndarray, threshold: float) -> None:
         >>> import warnings
         >>> with warnings.catch_warnings(record=True) as w:
         ...     warnings.simplefilter("always")
-        ...     check_and_warn_condition(np.eye(2), 1.0)
+        ...     check_and_warn_condition(np.eye(2), 0.5)
         ...     len(w)
         1
     """

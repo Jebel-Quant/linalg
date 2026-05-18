@@ -56,8 +56,8 @@ def solve(
 
         NaN-masked entries are skipped:
 
-        >>> matrix = np.array([[2.0, 0.0], [0.0, np.nan]])
-        >>> solve(matrix, np.array([4.0, 1.0])).tolist()
+        >>> matrix = np.array([[4.0, 0.0], [0.0, np.nan]])
+        >>> solve(matrix, np.array([8.0, 1.0])).tolist()
         [2.0, nan]
     """
     if matrix.shape[0] != matrix.shape[1]:
