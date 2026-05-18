@@ -26,8 +26,15 @@ Functions:
 """
 
 from .cholesky import cholesky as cholesky
+from .cholesky import cholesky_solve as cholesky_solve
+from .cholesky import is_positive_definite as is_positive_definite
 from .ewm_cov import NegativeWarmupError as NegativeWarmupError
 from .ewm_cov import ewm_covariance as ewm_covariance
+from .exceptions import DimensionMismatchError as DimensionMismatchError
+from .exceptions import IllConditionedMatrixWarning as IllConditionedMatrixWarning
+from .exceptions import NonSquareMatrixError as NonSquareMatrixError
+from .exceptions import SingularMatrixError as SingularMatrixError
+from .exceptions import check_and_warn_condition as check_and_warn_condition
 from .norm import a_norm as a_norm
 from .norm import inv_a_norm as inv_a_norm
 from .pca import pca as pca

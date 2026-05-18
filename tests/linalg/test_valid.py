@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from cvx.linalg import valid
+from cvx.linalg import NonSquareMatrixError, valid
 
 
 def test_valid() -> None:
@@ -24,12 +24,7 @@ def test_valid() -> None:
 
 
 def test_invalid() -> None:
-    """Test that the valid function raises an AssertionError for non-square matrices.
-
-    This test verifies that:
-    1. The valid function checks that the input matrix is square
-    2. The function raises an AssertionError when given a non-square matrix
-    """
+    """Test that the valid function raises NonSquareMatrixError for non-square matrices."""
     a = np.zeros((3, 2))
-    with pytest.raises(AssertionError):
+    with pytest.raises(NonSquareMatrixError):
         valid(a)

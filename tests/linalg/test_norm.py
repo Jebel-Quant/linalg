@@ -3,11 +3,19 @@
 from __future__ import annotations
 
 import math
+import warnings
 
 import numpy as np
 import pytest
 
-from cvx.linalg import a_norm, inv_a_norm
+from cvx.linalg import (
+    DimensionMismatchError,
+    IllConditionedMatrixWarning,
+    NonSquareMatrixError,
+    SingularMatrixError,
+    a_norm,
+    inv_a_norm,
+)
 
 
 def test_a_norm_without_matrix_ignores_non_finite_entries() -> None:
@@ -34,26 +42,26 @@ def test_inv_a_norm_uses_valid_submatrix() -> None:
 
 
 def test_norms_require_matching_dimensions() -> None:
-    """Test that the norm utilities validate matrix compatibility."""
+    """Test that the norm utilities raise DimensionMismatchError for incompatible shapes."""
     vector = np.array([1.0, 2.0])
     matrix = np.eye(3)
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(DimensionMismatchError):
         a_norm(vector, matrix)
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(DimensionMismatchError):
         inv_a_norm(vector, matrix)
 
 
 def test_norms_require_square_matrix() -> None:
-    """Test that the norm utilities reject non-square matrices."""
+    """Test that the norm utilities raise NonSquareMatrixError for non-square matrices."""
     vector = np.array([1.0, 2.0])
     matrix = np.array([[2.0, 0.0, 1.0], [0.0, 3.0, 4.0]])
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(NonSquareMatrixError):
         a_norm(vector, matrix)
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(NonSquareMatrixError):
         inv_a_norm(vector, matrix)
 
 
@@ -78,3 +86,35 @@ def test_inv_a_norm_all_invalid_matrix_returns_nan() -> None:
     matrix = np.array([[np.nan, 0.0], [0.0, np.nan]])
 
     assert math.isnan(inv_a_norm(vector, matrix))
+
+
+def test_inv_a_norm_singular_matrix_raises() -> None:
+    """Test that inv_a_norm raises SingularMatrixError for a singular system."""
+    vector = np.array([1.0, 2.0])
+    matrix = np.array([[1.0, 1.0], [1.0, 1.0]])
+
+    with pytest.raises(SingularMatrixError):
+        inv_a_norm(vector, matrix)
+
+
+def test_inv_a_norm_ill_conditioned_warns() -> None:
+    """Test that inv_a_norm emits IllConditionedMatrixWarning when condition exceeds threshold."""
+    rng = np.random.default_rng(0)
+    base = rng.standard_normal((4, 4))
+    matrix = base @ base.T + 1e-14 * np.eye(4)
+    vector = rng.standard_normal(4)
+
+    with pytest.warns(IllConditionedMatrixWarning):
+        inv_a_norm(vector, matrix, cond_threshold=1.0)
+
+
+def test_inv_a_norm_custom_threshold_suppresses_warning() -> None:
+    """Test that a high cond_threshold suppresses IllConditionedMatrixWarning."""
+    matrix = np.eye(2)
+    vector = np.array([1.0, 2.0])
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", IllConditionedMatrixWarning)
+        result = inv_a_norm(vector, matrix, cond_threshold=1e20)
+
+    assert result == pytest.approx(math.sqrt(5.0))
