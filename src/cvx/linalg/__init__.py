@@ -38,9 +38,9 @@ Functions:
 from .cholesky import cholesky as cholesky
 from .cholesky import is_positive_definite as is_positive_definite
 from .det import det as det
-from .eigvals import eigvals as eigvals
 from .eigh import eigh as eigh
 from .eigh import eigvalsh as eigvalsh
+from .eigvals import eigvals as eigvals
 from .ewm_cov import NegativeWarmupError as NegativeWarmupError
 from .ewm_cov import ewm_covariance as ewm_covariance
 from .exceptions import DimensionMismatchError as DimensionMismatchError
