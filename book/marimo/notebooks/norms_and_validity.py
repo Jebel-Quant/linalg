@@ -1,3 +1,14 @@
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#     "marimo==0.23.2",
+#     "cvx-linalg",
+#     "numpy>=2.0.0",
+# ]
+# [tool.uv.sources]
+# cvx-linalg = { path = "../../..", editable = true }
+# ///
+
 import marimo
 
 __generated_with = "0.23.2"
