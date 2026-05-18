@@ -18,6 +18,7 @@ Functions:
     cholesky: Compute upper triangular Cholesky decomposition
     det: Compute the determinant of a square matrix
     ewm_covariance: Compute exponentially weighted covariance matrices
+    inv: Invert a matrix with NaN-aware matrix filtering and condition-number guarding
     inv_a_norm: Compute the inverse matrix norm of a vector
     pca: Compute principal components of return data
     rand_cov: Generate a random positive semi-definite covariance matrix
@@ -36,6 +37,7 @@ from .exceptions import IllConditionedMatrixWarning as IllConditionedMatrixWarni
 from .exceptions import NonSquareMatrixError as NonSquareMatrixError
 from .exceptions import SingularMatrixError as SingularMatrixError
 from .exceptions import check_and_warn_condition as check_and_warn_condition
+from .inv import inv as inv
 from .norm import a_norm as a_norm
 from .norm import inv_a_norm as inv_a_norm
 from .pca import pca as pca
