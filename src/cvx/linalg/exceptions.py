@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import warnings
+from typing import Literal
 
 import numpy as np
 
@@ -79,7 +80,7 @@ class IllConditionedMatrixWarning(UserWarning):
     """
 
 
-def cond(matrix: np.ndarray, p: int | float | str | None = None) -> float:
+def cond(matrix: np.ndarray, p: int | float | Literal["fro", "nuc"] | None = None) -> float:
     """Return the condition number of a matrix.
 
     Returns ``nan`` if the matrix contains any non-finite (NaN or inf) entries.
