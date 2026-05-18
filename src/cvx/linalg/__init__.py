@@ -24,6 +24,7 @@ Functions:
     inv_a_norm: Compute the inverse matrix norm of a vector
     norm: Compute the norm of a vector or matrix, ignoring non-finite entries
     pca: Compute principal components of return data
+    qr: Compute reduced QR decomposition of a matrix
     rand_cov: Generate a random positive semi-definite covariance matrix
     solve: Solve linear systems with NaN-aware matrix filtering
     valid: Extract valid submatrix from a matrix with NaN values
@@ -47,6 +48,7 @@ from .norm import a_norm as a_norm
 from .norm import inv_a_norm as inv_a_norm
 from .norm import norm as norm
 from .pca import pca as pca
+from .qr import qr as qr
 from .rand_cov import rand_cov as rand_cov
 from .solve import solve as solve
 from .types import Matrix as Matrix
