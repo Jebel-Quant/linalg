@@ -72,3 +72,29 @@ def test_cholesky_solve_singular_raises() -> None:
     rhs = np.array([1.0, 2.0])
     with pytest.raises(np.linalg.LinAlgError):
         cholesky_solve(matrix, rhs)
+
+
+def test_is_positive_definite_correlation_like() -> None:
+    """Test that a shrunk correlation matrix is positive-definite."""
+    matrix = np.array([[1.0, 0.3], [0.3, 1.0]])
+    assert is_positive_definite(matrix) is True
+
+
+def test_is_positive_definite_negative_definite() -> None:
+    """Test that a negative-definite matrix returns False."""
+    assert is_positive_definite(-1.0 * np.eye(2)) is False
+
+
+def test_is_positive_definite_singular() -> None:
+    """Test that a rank-deficient matrix returns False."""
+    assert is_positive_definite(np.array([[1.0, 1.0], [1.0, 1.0]])) is False
+
+
+def test_is_positive_definite_scalar_positive() -> None:
+    """Test that a 1x1 positive matrix is positive-definite."""
+    assert is_positive_definite(np.array([[5.0]])) is True
+
+
+def test_is_positive_definite_scalar_zero() -> None:
+    """Test that a 1x1 zero matrix is not positive-definite."""
+    assert is_positive_definite(np.array([[0.0]])) is False

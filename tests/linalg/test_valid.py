@@ -28,3 +28,12 @@ def test_invalid() -> None:
     a = np.zeros((3, 2))
     with pytest.raises(NonSquareMatrixError):
         valid(a)
+
+
+def test_valid_eye() -> None:
+    """Test that valid returns an all-True mask and the full matrix for an identity matrix."""
+    a = np.eye(2)
+    val, submatrix = valid(a)
+
+    np.testing.assert_array_equal(val, np.array([True, True]))
+    np.testing.assert_array_equal(submatrix, np.eye(2))

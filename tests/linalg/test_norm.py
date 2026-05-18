@@ -118,3 +118,24 @@ def test_inv_a_norm_custom_threshold_suppresses_warning() -> None:
         result = inv_a_norm(vector, matrix, cond_threshold=1e20)
 
     assert result == pytest.approx(math.sqrt(5.0))
+
+
+def test_inv_a_norm_with_scaled_identity() -> None:
+    """Test inv_a_norm with a scaled identity matrix."""
+    v = np.array([3.0, 4.0])
+    a = 0.5 * np.eye(2)
+    assert inv_a_norm(vector=v, matrix=a) == pytest.approx(np.sqrt(2) * 5.0)
+
+
+def test_inv_a_norm_without_matrix_returns_euclidean_norm() -> None:
+    """Test that inv_a_norm without a matrix returns the Euclidean norm."""
+    v = np.array([3.0, 4.0])
+    assert inv_a_norm(vector=v) == pytest.approx(5.0)
+
+
+def test_inv_a_norm_pd_matrix_correct_result() -> None:
+    """Test inv_a_norm gives correct result via Cholesky for a positive-definite matrix."""
+    matrix = np.array([[4.0, 2.0], [2.0, 3.0]])
+    v = np.array([1.0, 0.0])
+    expected = float(np.sqrt(np.dot(v, np.linalg.solve(matrix, v))))
+    assert inv_a_norm(vector=v, matrix=matrix) == pytest.approx(expected)
