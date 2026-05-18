@@ -112,3 +112,23 @@ def test_lstsq_underdetermined() -> None:
     # Verify the solution satisfies mat @ x ≈ b (minimum-norm solution).
     np.testing.assert_allclose(mat @ x, b, atol=1e-12)
     assert rank == 2
+
+
+def test_lstsq_rank_deficient_warns_with_inf_cond() -> None:
+    """Test that a rank-deficient matrix (sv[-1] == 0) triggers inf condition warning."""
+    # Second column is all zeros → sv[-1] == 0.0 exactly, cond treated as inf.
+    mat = np.array([[1.0, 0.0], [2.0, 0.0], [3.0, 0.0]])
+    b = np.array([1.0, 2.0, 3.0])
+    with pytest.warns(IllConditionedMatrixWarning):
+        lstsq(mat, b, cond_threshold=1.0)
+
+
+def test_lstsq_zero_columns_returns_empty_solution() -> None:
+    """Test lstsq with a zero-column matrix returns empty x and sv without warning."""
+    mat = np.zeros((3, 0))
+    b = np.array([1.0, 2.0, 3.0])
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", IllConditionedMatrixWarning)
+        x, _, _rank, sv = lstsq(mat, b)
+    assert x.shape == (0,)
+    assert sv.size == 0

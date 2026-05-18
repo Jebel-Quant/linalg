@@ -18,6 +18,7 @@ Functions:
     cholesky: Compute upper triangular Cholesky decomposition
     cond: Return the condition number of a matrix (NaN-aware)
     det: Compute the determinant of a square matrix
+    eigvals: Compute eigenvalues of a general square matrix
     eigh: Compute eigenvalues and eigenvectors of a symmetric/Hermitian matrix
     eigvalsh: Compute eigenvalues of a symmetric/Hermitian matrix
     ewm_covariance: Compute exponentially weighted covariance matrices
@@ -39,11 +40,13 @@ from .cholesky import is_positive_definite as is_positive_definite
 from .det import det as det
 from .eigh import eigh as eigh
 from .eigh import eigvalsh as eigvalsh
+from .eigvals import eigvals as eigvals
 from .ewm_cov import NegativeWarmupError as NegativeWarmupError
 from .ewm_cov import ewm_covariance as ewm_covariance
 from .exceptions import DimensionMismatchError as DimensionMismatchError
 from .exceptions import IllConditionedMatrixWarning as IllConditionedMatrixWarning
 from .exceptions import NonSquareMatrixError as NonSquareMatrixError
+from .exceptions import NotAMatrixError as NotAMatrixError
 from .exceptions import SingularMatrixError as SingularMatrixError
 from .exceptions import check_and_warn_condition as check_and_warn_condition
 from .exceptions import cond as cond
