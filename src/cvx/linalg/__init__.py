@@ -16,6 +16,7 @@ Example:
 Functions:
     a_norm: Compute the matrix norm of a vector
     cholesky: Compute upper triangular Cholesky decomposition
+    det: Compute the determinant of a square matrix
     ewm_covariance: Compute exponentially weighted covariance matrices
     inv_a_norm: Compute the inverse matrix norm of a vector
     pca: Compute principal components of return data
@@ -27,6 +28,7 @@ Functions:
 
 from .cholesky import cholesky as cholesky
 from .cholesky import is_positive_definite as is_positive_definite
+from .det import det as det
 from .ewm_cov import NegativeWarmupError as NegativeWarmupError
 from .ewm_cov import ewm_covariance as ewm_covariance
 from .exceptions import DimensionMismatchError as DimensionMismatchError
