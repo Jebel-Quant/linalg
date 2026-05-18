@@ -51,7 +51,7 @@ def lstsq(
         >>> A = np.array([[1.0, 1.0], [1.0, 2.0], [1.0, 3.0]])
         >>> b = np.array([6.0, 5.0, 7.0])
         >>> x, res, rank, sv = lstsq(A, b)
-        >>> rank
+        >>> int(rank)
         2
 
         NaN rows are silently dropped:
@@ -59,7 +59,7 @@ def lstsq(
         >>> A_nan = np.array([[1.0, 1.0], [np.nan, 2.0], [1.0, 3.0]])
         >>> b_nan = np.array([6.0, 5.0, 7.0])
         >>> x2, _, rank2, _ = lstsq(A_nan, b_nan)
-        >>> rank2
+        >>> int(rank2)
         2
     """
     if rhs.shape[0] != matrix.shape[0]:
