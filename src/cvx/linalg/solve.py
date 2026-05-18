@@ -72,7 +72,7 @@ def solve(
     if mask.any():
         _check_and_warn_condition(submatrix, cond_threshold)
         try:
-            solution[mask] = _cholesky(submatrix, rhs[mask])  # type: ignore[assignment]
+            solution[mask] = _cholesky(submatrix, rhs[mask])
         except np.linalg.LinAlgError as exc:
             raise SingularMatrixError(str(exc)) from exc
 

@@ -15,7 +15,53 @@ from cvx.linalg import (
     SingularMatrixError,
     a_norm,
     inv_a_norm,
+    norm,
 )
+
+
+def test_norm_vector_l2() -> None:
+    """Test that norm() computes the 2-norm of a vector, ignoring NaN."""
+    assert norm(np.array([3.0, np.nan, 4.0])) == pytest.approx(5.0)
+
+
+def test_norm_vector_l1() -> None:
+    """Test that norm() computes the 1-norm, treating NaN as zero."""
+    assert norm(np.array([1.0, np.nan, 2.0]), ord=1) == pytest.approx(3.0)
+
+
+def test_norm_vector_inf() -> None:
+    """Test that norm() computes the inf-norm, treating NaN as zero."""
+    assert norm(np.array([3.0, np.nan, 4.0]), ord=np.inf) == pytest.approx(4.0)
+
+
+def test_norm_matrix_frobenius() -> None:
+    """Test Frobenius norm of a matrix with NaN entries treated as zero."""
+    m = np.array([[1.0, np.nan], [np.nan, 1.0]])
+    assert norm(m, ord="fro") == pytest.approx(math.sqrt(2.0))
+
+
+def test_norm_matrix_nuclear() -> None:
+    """Test nuclear norm of an identity matrix (sum of singular values = n)."""
+    assert norm(np.eye(3), ord="nuc") == pytest.approx(3.0)
+
+
+def test_norm_all_nan_returns_zero() -> None:
+    """Test that a fully NaN array returns 0 (all entries treated as zero)."""
+    assert norm(np.array([np.nan, np.nan])) == pytest.approx(0.0)
+
+
+def test_norm_finite_vector_matches_numpy() -> None:
+    """Test that norm() matches np.linalg.norm for fully finite inputs."""
+    rng = np.random.default_rng(42)
+    v = rng.standard_normal(10)
+    assert norm(v) == pytest.approx(float(np.linalg.norm(v)))
+
+
+def test_norm_finite_matrix_matches_numpy() -> None:
+    """Test that norm() matches np.linalg.norm for fully finite matrix."""
+    rng = np.random.default_rng(42)
+    m = rng.standard_normal((4, 4))
+    assert norm(m) == pytest.approx(float(np.linalg.norm(m)))
 
 
 def test_a_norm_without_matrix_ignores_non_finite_entries() -> None:
