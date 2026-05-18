@@ -46,9 +46,9 @@ from .exceptions import IllConditionedMatrixWarning as IllConditionedMatrixWarni
 from .exceptions import NonSquareMatrixError as NonSquareMatrixError
 from .exceptions import SingularMatrixError as SingularMatrixError
 from .exceptions import check_and_warn_condition as check_and_warn_condition
-from .lstsq import lstsq as lstsq
 from .exceptions import cond as cond
 from .inv import inv as inv
+from .lstsq import lstsq as lstsq
 from .norm import a_norm as a_norm
 from .norm import inv_a_norm as inv_a_norm
 from .norm import norm as norm
