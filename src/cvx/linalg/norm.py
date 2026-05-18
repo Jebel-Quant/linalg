@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 import numpy as np
 
 from .cholesky import cholesky as _cholesky
@@ -19,7 +21,7 @@ from .valid import valid
 
 def norm(
     x: np.ndarray,
-    ord: int | float | str | None = None,
+    ord: int | float | Literal["fro", "nuc"] | None = None,
 ) -> float:
     """Compute the norm of a vector or matrix, ignoring non-finite entries.
 
