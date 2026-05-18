@@ -23,6 +23,7 @@ Functions:
     ewm_covariance: Compute exponentially weighted covariance matrices
     inv: Invert a matrix with NaN-aware matrix filtering and condition-number guarding
     inv_a_norm: Compute the inverse matrix norm of a vector
+    lstsq: Solve least-squares problems with NaN-aware row filtering
     norm: Compute the norm of a vector or matrix, ignoring non-finite entries
     pca: Compute principal components of return data
     qr: Compute reduced QR decomposition of a matrix
@@ -47,6 +48,7 @@ from .exceptions import SingularMatrixError as SingularMatrixError
 from .exceptions import check_and_warn_condition as check_and_warn_condition
 from .exceptions import cond as cond
 from .inv import inv as inv
+from .lstsq import lstsq as lstsq
 from .norm import a_norm as a_norm
 from .norm import inv_a_norm as inv_a_norm
 from .norm import norm as norm
