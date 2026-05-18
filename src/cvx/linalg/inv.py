@@ -51,9 +51,9 @@ def inv(
 
         >>> matrix = np.array([[4.0, 0.0], [0.0, np.nan]])
         >>> result = inv(matrix)
-        >>> result[0, 0]
+        >>> float(result[0, 0])
         0.25
-        >>> np.isnan(result[0, 1]) and np.isnan(result[1, 0]) and np.isnan(result[1, 1])
+        >>> bool(np.isnan(result[0, 1]) and np.isnan(result[1, 0]) and np.isnan(result[1, 1]))
         True
     """
     if matrix.shape[0] != matrix.shape[1]:
