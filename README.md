@@ -21,7 +21,7 @@ pip install cvx-linalg
 ```python
 from cvx.linalg import (
     a_norm, cholesky, ewm_covariance,
-    inv, inv_a_norm, is_positive_definite, pca, qr, rand_cov, solve, valid,
+    inv, inv_a_norm, is_positive_definite, lstsq, pca, rand_cov, solve, valid,
 )
 ```
 
@@ -36,6 +36,7 @@ from cvx.linalg import (
 - **[`ewm_covariance(data, assets, index_col, window, is_halflife, warmup)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/ewm_cov.py#L15)** — Exponentially weighted covariance matrices from a Polars DataFrame
 - **[`inv(matrix, cond_threshold=1e12)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/inv.py#L20)** — Invert a matrix restricted to valid rows/columns; NaN rows/columns are returned for invalid positions
 - **[`inv_a_norm(vector, matrix=None)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/norm.py#L58)** — Euclidean norm or inverse NaN-aware matrix norm
+- **[`lstsq(matrix, rhs, cond_threshold=1e12)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/lstsq.py#L15)** — Solve a least-squares system with NaN-aware row filtering; returns `(x, residuals, rank, sv)` consistent with `numpy.linalg.lstsq`
 - **[`is_positive_definite(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/cholesky.py#L57)** — Return True if the matrix is symmetric positive-definite
 - **[`pca(returns, n_components)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/pca.py#L61)** — Principal Component Analysis via SVD
 - **[`qr(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/qr.py#L10)** — Reduced QR decomposition, matching `np.linalg.qr(mode='reduced')`
