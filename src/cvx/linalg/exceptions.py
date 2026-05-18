@@ -79,6 +79,40 @@ class IllConditionedMatrixWarning(UserWarning):
     """
 
 
+def cond(matrix: np.ndarray, p: int | float | str | None = None) -> float:
+    """Return the condition number of a matrix.
+
+    Returns ``nan`` if the matrix contains any non-finite (NaN or inf) entries.
+    Otherwise delegates to :func:`numpy.linalg.cond`.
+
+    Args:
+        matrix: Input matrix.
+        p: Order of the norm used to compute the condition number.
+            Accepts the same values as :func:`numpy.linalg.cond`
+            (``None``, ``1``, ``-1``, ``2``, ``-2``, ``numpy.inf``,
+            ``-numpy.inf``, ``'fro'``).  Defaults to ``None`` which
+            corresponds to the 2-norm (largest singular value divided by
+            the smallest).
+
+    Returns:
+        The condition number as a ``float``, or ``nan`` when the matrix
+        contains non-finite entries.
+
+    Examples:
+        >>> import numpy as np
+        >>> cond(np.eye(3))
+        1.0
+        >>> import math
+        >>> math.isnan(cond(np.array([[float('nan'), 1.0], [1.0, 2.0]])))
+        True
+        >>> cond(np.diag([1.0, 1e10]), p=1)
+        10000000000.0
+    """
+    if not np.all(np.isfinite(matrix)):
+        return float("nan")
+    return float(np.linalg.cond(matrix, p=p))
+
+
 def check_and_warn_condition(matrix: np.ndarray, threshold: float) -> None:
     """Emit IllConditionedMatrixWarning when the condition number exceeds threshold.
 
@@ -95,10 +129,10 @@ def check_and_warn_condition(matrix: np.ndarray, threshold: float) -> None:
         ...     len(w)
         1
     """
-    cond = float(np.linalg.cond(matrix))
-    if cond > threshold:
+    c = cond(matrix)
+    if c > threshold:
         warnings.warn(
-            f"Matrix condition number {cond:.3e} exceeds threshold {threshold:.3e}; "
+            f"Matrix condition number {c:.3e} exceeds threshold {threshold:.3e}; "
             "results may be numerically unreliable.",
             IllConditionedMatrixWarning,
             stacklevel=3,
