@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from cvx.linalg import cholesky, cholesky_solve, is_positive_definite, rand_cov
+from cvx.linalg import cholesky, is_positive_definite, rand_cov
 
 
 def test_cholesky() -> None:
@@ -35,43 +35,43 @@ def test_is_positive_definite_false() -> None:
     assert not is_positive_definite(np.zeros((2, 2)))
 
 
-def test_cholesky_solve_identity() -> None:
-    """Test that cholesky_solve correctly solves an identity system."""
+def test_cholesky_identity() -> None:
+    """Test that cholesky correctly solves an identity system."""
     rhs = np.array([1.0, 2.0])
-    result = cholesky_solve(np.eye(2), rhs)
+    result = cholesky(np.eye(2), rhs)
     assert np.allclose(result, rhs)
 
 
-def test_cholesky_solve_pd_matrix() -> None:
-    """Test that cholesky_solve gives the correct solution for a positive-definite matrix."""
+def test_cholesky_pd_matrix() -> None:
+    """Test that cholesky gives the correct solution for a positive-definite matrix."""
     matrix = np.array([[4.0, 0.0], [0.0, 9.0]])
     rhs = np.array([8.0, 27.0])
-    result = cholesky_solve(matrix, rhs)
+    result = cholesky(matrix, rhs)
     assert np.allclose(result, np.array([2.0, 3.0]))
 
 
-def test_cholesky_solve_non_pd_falls_back_to_lu() -> None:
-    """Test that cholesky_solve falls back to LU for a non-positive-definite matrix."""
+def test_cholesky_non_pd_falls_back_to_lu() -> None:
+    """Test that cholesky falls back to LU for a non-positive-definite matrix."""
     matrix = np.array([[1.0, 0.0], [0.0, -1.0]])
     rhs = np.array([2.0, -3.0])
-    result = cholesky_solve(matrix, rhs)
+    result = cholesky(matrix, rhs)
     assert np.allclose(result, np.array([2.0, 3.0]))
 
 
-def test_cholesky_solve_random() -> None:
-    """Test that cholesky_solve satisfies matrix @ x = rhs for a random PD matrix."""
+def test_cholesky_random() -> None:
+    """Test that cholesky satisfies matrix @ x = rhs for a random PD matrix."""
     a = rand_cov(5)
     rhs = np.random.default_rng(0).standard_normal(5)
-    x = cholesky_solve(a, rhs)
+    x = cholesky(a, rhs)
     assert np.allclose(a @ x, rhs)
 
 
-def test_cholesky_solve_singular_raises() -> None:
-    """Test that cholesky_solve raises LinAlgError for a singular matrix."""
+def test_cholesky_singular_raises() -> None:
+    """Test that cholesky raises LinAlgError for a singular matrix."""
     matrix = np.array([[1.0, 1.0], [1.0, 1.0]])
     rhs = np.array([1.0, 2.0])
     with pytest.raises(np.linalg.LinAlgError):
-        cholesky_solve(matrix, rhs)
+        cholesky(matrix, rhs)
 
 
 def test_is_positive_definite_correlation_like() -> None:

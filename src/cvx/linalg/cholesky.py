@@ -1,22 +1,4 @@
-"""Cholesky decomposition utilities for covariance matrices.
-
-This module provides a function to compute the upper triangular Cholesky
-decomposition of a positive definite covariance matrix.
-
-Example:
-    Compute the Cholesky decomposition of a covariance matrix:
-
-    >>> import numpy as np
-    >>> from cvx.linalg import cholesky
-    >>> # Create a positive definite matrix
-    >>> cov = np.array([[4.0, 2.0], [2.0, 5.0]])
-    >>> # Compute upper triangular Cholesky factor
-    >>> R = cholesky(cov)
-    >>> # Verify: R.T @ R = cov
-    >>> np.allclose(R.T @ R, cov)
-    True
-
-"""
+"""Cholesky decomposition utilities for covariance matrices."""
 
 from __future__ import annotations
 
@@ -24,84 +6,52 @@ import numpy as np
 from numpy.linalg import cholesky as _cholesky
 
 
-def cholesky(cov: np.ndarray) -> np.ndarray:
-    """Compute the upper triangular part of the Cholesky decomposition.
+def cholesky(cov: np.ndarray, rhs: np.ndarray | None = None) -> np.ndarray:
+    """Compute the upper triangular Cholesky factor, or solve a linear system.
 
-    This function computes the Cholesky decomposition of a positive definite matrix
-    and returns the upper triangular matrix R such that R^T @ R = cov.
-
-    The Cholesky decomposition is useful in portfolio optimization because it
-    provides an efficient way to compute portfolio risk as ||R @ w||_2, where
-    w is the portfolio weights vector.
+    When called without *rhs*, returns the upper triangular factor R such that
+    R.T @ R = cov.  When *rhs* is given, solves ``cov @ x = rhs`` using the
+    Cholesky decomposition for numerical stability, falling back to LU
+    decomposition if *cov* is not positive-definite.
 
     Args:
         cov: A positive definite covariance matrix of shape (n, n).
+        rhs: Optional right-hand side vector or matrix. When provided the
+            system ``cov @ x = rhs`` is solved and *x* is returned.
 
     Returns:
-        The upper triangular Cholesky factor R of shape (n, n).
+        The upper triangular Cholesky factor R when *rhs* is ``None``, or the
+        solution x to ``cov @ x = rhs`` otherwise.
+
+    Raises:
+        np.linalg.LinAlgError: When *rhs* is ``None`` and *cov* is not
+            positive-definite, or when *rhs* is given and both Cholesky and
+            LU-based solves fail.
 
     Example:
-        Basic usage with a simple covariance matrix:
+        Decomposition (no rhs):
 
         >>> import numpy as np
         >>> from cvx.linalg import cholesky
-        >>> # Identity matrix
-        >>> cov = np.eye(3)
-        >>> R = cholesky(cov)
-        >>> np.allclose(R, np.eye(3))
-        True
-
-        With a more complex covariance matrix:
-
-        >>> cov = np.array([[1.0, 0.5, 0.0],
-        ...                 [0.5, 1.0, 0.5],
-        ...                 [0.0, 0.5, 1.0]])
+        >>> cov = np.array([[4.0, 2.0], [2.0, 5.0]])
         >>> R = cholesky(cov)
         >>> np.allclose(R.T @ R, cov)
         True
 
-        Verify upper triangular structure:
+        Solve (with rhs):
 
-        >>> R = cholesky(np.array([[4.0, 2.0], [2.0, 5.0]]))
-        >>> # R is upper triangular (zeros below diagonal)
-        >>> bool(np.allclose(R[1, 0], 0.0))
-        True
-        >>> bool(R[0, 0] > 0 and R[1, 1] > 0)  # Positive diagonal
-        True
-
-        Portfolio risk computation via Cholesky factor:
-
-        >>> cov = np.array([[0.04, 0.01], [0.01, 0.09]])
-        >>> R = cholesky(cov)
-        >>> w = np.array([0.6, 0.4])
-        >>> # Risk via Cholesky: ||R @ w||_2
-        >>> risk_chol = np.linalg.norm(R @ w)
-        >>> # Risk via covariance: sqrt(w^T @ cov @ w)
-        >>> risk_cov = np.sqrt(w @ cov @ w)
-        >>> bool(np.isclose(risk_chol, risk_cov))
-        True
-
-        Relationship between upper (R) and lower (L) triangular factors:
-
-        >>> cov = np.array([[9.0, 3.0], [3.0, 5.0]])
-        >>> R = cholesky(cov)
-        >>> L = np.linalg.cholesky(cov)  # numpy returns lower triangular
-        >>> # R = L^T
-        >>> np.allclose(R, L.T)
-        True
-        >>> # Both reconstruct the covariance
-        >>> np.allclose(L @ L.T, cov)
-        True
-        >>> np.allclose(R.T @ R, cov)
-        True
-
-    Note:
-        This function returns the upper triangular factor (R), whereas
-        numpy.linalg.cholesky returns the lower triangular factor (L).
-        The relationship is: L @ L^T = cov and R^T @ R = cov, where R = L^T.
-
+        >>> cholesky(np.eye(2), np.array([1.0, 2.0])).tolist()
+        [1.0, 2.0]
+        >>> cholesky(np.array([[4.0, 0.0], [0.0, 9.0]]), np.array([8.0, 27.0])).tolist()
+        [2.0, 3.0]
     """
-    return _cholesky(cov).transpose()
+    if rhs is None:
+        return _cholesky(cov).transpose()
+    try:
+        upper = _cholesky(cov).transpose()
+        return np.linalg.solve(upper, np.linalg.solve(upper.T, rhs))
+    except np.linalg.LinAlgError:
+        return np.linalg.solve(cov, rhs)
 
 
 def is_positive_definite(matrix: np.ndarray) -> bool:
@@ -136,35 +86,3 @@ def is_positive_definite(matrix: np.ndarray) -> bool:
         return False
     else:
         return True
-
-
-def cholesky_solve(matrix: np.ndarray, rhs: np.ndarray) -> np.ndarray:
-    """Solve *matrix* x = *rhs* using Cholesky, falling back to LU if needed.
-
-    Cholesky decomposition is attempted first as it is numerically more stable
-    for positive-definite matrices.  If the decomposition fails the matrix is
-    not positive-definite and a standard LU-based solve is used instead.
-
-    Args:
-        matrix: Square coefficient matrix.
-        rhs: Right-hand side vector or matrix.
-
-    Returns:
-        Solution x such that ``matrix @ x ≈ rhs``.
-
-    Raises:
-        np.linalg.LinAlgError: If both Cholesky and LU-based solves fail.
-
-    Example:
-        >>> import numpy as np
-        >>> from cvx.linalg import cholesky_solve
-        >>> cholesky_solve(np.eye(2), np.array([1.0, 2.0])).tolist()
-        [1.0, 2.0]
-        >>> cholesky_solve(np.array([[4.0, 0.0], [0.0, 9.0]]), np.array([8.0, 27.0])).tolist()
-        [2.0, 3.0]
-    """
-    try:
-        upper = cholesky(matrix)
-        return np.linalg.solve(upper, np.linalg.solve(upper.T, rhs))
-    except np.linalg.LinAlgError:
-        return np.linalg.solve(matrix, rhs)

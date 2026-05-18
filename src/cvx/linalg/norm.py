@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from .cholesky import cholesky_solve as _cholesky_solve
+from .cholesky import cholesky as _cholesky
 from .exceptions import (
     DimensionMismatchError,
     NonSquareMatrixError,
@@ -106,7 +106,7 @@ def inv_a_norm(
         _check_and_warn_condition(submatrix, cond_threshold)
         filtered_vector = vector[mask]
         try:
-            solved = _cholesky_solve(submatrix, filtered_vector)
+            solved = _cholesky(submatrix, filtered_vector)
         except np.linalg.LinAlgError as exc:
             raise SingularMatrixError(str(exc)) from exc
         return float(np.sqrt(np.dot(filtered_vector, solved)))

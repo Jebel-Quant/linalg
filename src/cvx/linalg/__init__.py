@@ -26,7 +26,6 @@ Functions:
 """
 
 from .cholesky import cholesky as cholesky
-from .cholesky import cholesky_solve as cholesky_solve
 from .cholesky import is_positive_definite as is_positive_definite
 from .ewm_cov import NegativeWarmupError as NegativeWarmupError
 from .ewm_cov import ewm_covariance as ewm_covariance
