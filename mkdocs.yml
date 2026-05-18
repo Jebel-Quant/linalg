@@ -11,6 +11,14 @@ copyright: Copyright &copy; 2025–2026 Jebel Quant Research
 nav:
   - Home: index.md
   - API Reference: api.md
+  - Notebooks:
+    - End to End: notebooks/end_to_end.html
+    - Norms and Validity: notebooks/norms_and_validity.html
+  - Reports:
+    - Test Report: reports/html-report/report.html
+    - Coverage Report: reports/html-coverage/index.html
+    - Benchmark Report: reports/benchmarks/report.html
+    - Hypothesis Report: reports/hypothesis/report.html
   - Development:
     - Tests: development/TESTS.md
 
@@ -19,10 +27,15 @@ extra:
     - icon: fontawesome/brands/github
       link: https://github.com/Jebel-Quant/linalg
 
+theme:
+  icon:
+    logo: material/matrix
+
 plugins:
   - mkdocstrings:
       handlers:
         python:
+          paths: [src]
           options:
             docstring_style: google
             show_source: true
