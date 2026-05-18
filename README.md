@@ -40,6 +40,7 @@ from cvx.linalg import (
 - **[`qr(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/qr.py#L10)** — Reduced QR decomposition, matching `np.linalg.qr(mode='reduced')`
 - **[`rand_cov(n, seed)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/rand_cov.py#L29)** — Random positive semi-definite covariance matrix
 - **[`solve(matrix, rhs, cond_threshold=1e12)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/solve.py#L22)** — Solve a linear system restricted to valid rows/columns; NaN entries are returned for invalid positions
+- **[`svd(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/svd.py#L11)** — Raw compact singular value decomposition via `np.linalg.svd(full_matrices=False)`
 - **[`valid(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/valid.py#L32)** — Return a boolean mask and valid submatrix by removing rows/columns with non-finite diagonal entries
 
 ## Exceptions & Warnings
