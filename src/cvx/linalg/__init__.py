@@ -18,6 +18,7 @@ Functions:
     cholesky: Compute upper triangular Cholesky decomposition
     cond: Return the condition number of a matrix (NaN-aware)
     det: Compute the determinant of a square matrix
+    eigvals: Compute eigenvalues of a general square matrix
     ewm_covariance: Compute exponentially weighted covariance matrices
     inv: Invert a matrix with NaN-aware matrix filtering and condition-number guarding
     inv_a_norm: Compute the inverse matrix norm of a vector
@@ -33,6 +34,7 @@ Functions:
 from .cholesky import cholesky as cholesky
 from .cholesky import is_positive_definite as is_positive_definite
 from .det import det as det
+from .eigvals import eigvals as eigvals
 from .ewm_cov import NegativeWarmupError as NegativeWarmupError
 from .ewm_cov import ewm_covariance as ewm_covariance
 from .exceptions import DimensionMismatchError as DimensionMismatchError

@@ -20,7 +20,7 @@ pip install cvx-linalg
 
 ```python
 from cvx.linalg import (
-    a_norm, cholesky, ewm_covariance,
+    a_norm, cholesky, eigvals, ewm_covariance,
     inv, inv_a_norm, is_positive_definite, pca, qr, rand_cov, solve, valid,
 )
 ```
@@ -31,6 +31,7 @@ from cvx.linalg import (
 - **[`cholesky(cov, rhs=None)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/cholesky.py#L9)** — Upper triangular Cholesky factor R such that R.T @ R = cov; when *rhs* is given, solves cov @ x = rhs (falls back to LU for non-positive-definite matrices)
 - **[`cond(matrix, p=None)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/exceptions.py#L82)** — Condition number of a matrix (NaN-aware); accepts the same `p` norm values as `numpy.linalg.cond`
 - **[`det(matrix, cond_threshold=1e12)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/det.py#L18)** — Determinant of a square matrix with NaN-aware submatrix handling; emits `IllConditionedMatrixWarning` when near-singular
+- **[`eigvals(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/eigvals.py#L10)** — Eigenvalues of a general square matrix (supports complex output for non-symmetric matrices)
 - **[`ewm_covariance(data, assets, index_col, window, is_halflife, warmup)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/ewm_cov.py#L15)** — Exponentially weighted covariance matrices from a Polars DataFrame
 - **[`inv(matrix, cond_threshold=1e12)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/inv.py#L20)** — Invert a matrix restricted to valid rows/columns; NaN rows/columns are returned for invalid positions
 - **[`inv_a_norm(vector, matrix=None)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/norm.py#L58)** — Euclidean norm or inverse NaN-aware matrix norm
