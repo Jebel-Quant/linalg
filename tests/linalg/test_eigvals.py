@@ -29,3 +29,11 @@ def test_eigvals_requires_square_matrix() -> None:
 
     with pytest.raises(NonSquareMatrixError):
         eigvals(matrix)
+
+
+def test_eigvals_requires_2d_input() -> None:
+    """Test eigvals raises IndexError for non-2-D input."""
+    matrix = np.array([1.0, 2.0, 3.0])
+
+    with pytest.raises(IndexError):
+        eigvals(matrix)
