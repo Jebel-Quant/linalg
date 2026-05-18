@@ -27,6 +27,8 @@ from collections import namedtuple
 
 import numpy as np
 
+from .svd import svd
+
 Matrix = np.ndarray
 
 PCA = namedtuple(
@@ -100,7 +102,7 @@ def pca(returns: Matrix, n_components: int = 10) -> PCA:
     x_mean = returns.mean(axis=0)
     x_centered = returns - x_mean
 
-    u, s_full, vt = np.linalg.svd(x_centered, full_matrices=False)
+    u, s_full, vt = svd(x_centered)
 
     u = u[:, :n_components]
     s = s_full[:n_components]
