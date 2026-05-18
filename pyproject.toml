@@ -59,4 +59,9 @@ known_first_party = ["cvx"]
 
 [tool.deptry.package_module_name_map]
 numpy = "numpy"
+polars = "polars"
+hypothesis = "hypothesis"
+pandas = "pandas"
+marimo = "marimo"
+pytest = "pytest"
 "cvx-linalg" = "cvx"
