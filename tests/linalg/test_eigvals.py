@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from cvx.linalg import NonSquareMatrixError, eigvals
+from cvx.linalg import NonSquareMatrixError, NotAMatrixError, eigvals
 
 
 def test_eigvals_general_matrix_can_be_complex() -> None:
@@ -32,8 +32,8 @@ def test_eigvals_requires_square_matrix() -> None:
 
 
 def test_eigvals_requires_2d_input() -> None:
-    """Test eigvals raises IndexError for non-2-D input."""
+    """Test eigvals raises NotAMatrixError for non-2-D input."""
     matrix = np.array([1.0, 2.0, 3.0])
 
-    with pytest.raises(IndexError):
+    with pytest.raises(NotAMatrixError):
         eigvals(matrix)

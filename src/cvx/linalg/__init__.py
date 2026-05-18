@@ -46,6 +46,7 @@ from .ewm_cov import ewm_covariance as ewm_covariance
 from .exceptions import DimensionMismatchError as DimensionMismatchError
 from .exceptions import IllConditionedMatrixWarning as IllConditionedMatrixWarning
 from .exceptions import NonSquareMatrixError as NonSquareMatrixError
+from .exceptions import NotAMatrixError as NotAMatrixError
 from .exceptions import SingularMatrixError as SingularMatrixError
 from .exceptions import check_and_warn_condition as check_and_warn_condition
 from .exceptions import cond as cond
