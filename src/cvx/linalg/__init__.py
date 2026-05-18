@@ -6,7 +6,7 @@ linear-system solving, matrix validation, and EWM covariance estimation.
 
 Example:
     >>> import numpy as np
-    >>> from cvx.linalg import a_norm, cholesky, inv_a_norm, pca, rand_cov, solve, valid
+    >>> from cvx.linalg import a_norm, cholesky, inv_a_norm, pca, rand_cov, solve, svd, valid
     >>> # Cholesky decomposition
     >>> cov = np.array([[4.0, 2.0], [2.0, 5.0]])
     >>> R = cholesky(cov)
@@ -24,6 +24,7 @@ Functions:
     pca: Compute principal components of return data
     rand_cov: Generate a random positive semi-definite covariance matrix
     solve: Solve linear systems with NaN-aware matrix filtering
+    svd: Compute compact singular value decomposition
     valid: Extract valid submatrix from a matrix with NaN values
 
 """
@@ -45,5 +46,6 @@ from .norm import norm as norm
 from .pca import pca as pca
 from .rand_cov import rand_cov as rand_cov
 from .solve import solve as solve
+from .svd import svd as svd
 from .types import Matrix as Matrix
 from .valid import valid as valid
