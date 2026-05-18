@@ -19,16 +19,34 @@ pip install cvx-linalg
 ## Usage
 
 ```python
-from cvx.linalg import a_norm, cholesky, ewm_covariance, inv_a_norm, pca, rand_cov, solve, valid
+from cvx.linalg import (
+    a_norm, cholesky, cholesky_solve, ewm_covariance,
+    inv_a_norm, is_positive_definite, pca, rand_cov, solve, valid,
+)
 ```
 
 ## Functions
 
-- **`a_norm(vector, matrix=None)`** — Euclidean norm or NaN-aware matrix norm
-- **`cholesky(cov)`** — Upper triangular Cholesky factor R such that R.T @ R = cov
-- **`ewm_covariance(data, assets, index_col, window, is_halflife, warmup)`** — Exponentially weighted covariance matrices from a Polars DataFrame
-- **`inv_a_norm(vector, matrix=None)`** — Euclidean norm or inverse NaN-aware matrix norm
-- **`pca(returns, n_components)`** — Principal Component Analysis via SVD
-- **`rand_cov(n, seed)`** — Random positive semi-definite covariance matrix
-- **`solve(matrix, rhs)`** — Solve a linear system after removing invalid rows/columns
-- **`valid(matrix)`** — Extract valid submatrix by removing rows/columns with non-finite diagonal entries
+- **[`a_norm(vector, matrix=None)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/norm.py#L20)** — Euclidean norm or NaN-aware matrix norm
+- **[`cholesky(cov)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/cholesky.py#L27)** — Upper triangular Cholesky factor R such that R.T @ R = cov
+- **[`cholesky_solve(matrix, rhs)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/cholesky.py#L141)** — Solve a linear system using Cholesky; falls back to LU for non-positive-definite matrices
+- **[`ewm_covariance(data, assets, index_col, window, is_halflife, warmup)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/ewm_cov.py#L15)** — Exponentially weighted covariance matrices from a Polars DataFrame
+- **[`inv_a_norm(vector, matrix=None)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/norm.py#L58)** — Euclidean norm or inverse NaN-aware matrix norm
+- **[`is_positive_definite(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/cholesky.py#L107)** — Return True if the matrix is symmetric positive-definite
+- **[`pca(returns, n_components)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/pca.py#L61)** — Principal Component Analysis via SVD
+- **[`rand_cov(n, seed)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/rand_cov.py#L29)** — Random positive semi-definite covariance matrix
+- **[`solve(matrix, rhs, cond_threshold=1e12)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/solve.py#L22)** — Solve a linear system restricted to valid rows/columns; NaN entries are returned for invalid positions
+- **[`valid(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/valid.py#L32)** — Return a boolean mask and valid submatrix by removing rows/columns with non-finite diagonal entries
+
+## Exceptions & Warnings
+
+- **[`DimensionMismatchError`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/exceptions.py#L31)** — Raised when vector length does not match matrix dimension
+- **[`IllConditionedMatrixWarning`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/exceptions.py#L73)** — Emitted when the condition number exceeds a configurable threshold
+- **[`NegativeWarmupError`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/ewm_cov.py#L11)** — Raised when a negative warmup period is passed to `ewm_covariance`
+- **[`NonSquareMatrixError`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/exceptions.py#L10)** — Raised when a square matrix is required but the input is not square
+- **[`SingularMatrixError`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/exceptions.py#L52)** — Raised when a matrix is numerically singular
+- **[`check_and_warn_condition(matrix, threshold)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/exceptions.py#L82)** — Emit `IllConditionedMatrixWarning` when the condition number exceeds the threshold
+
+## Types
+
+- **[`Matrix`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/types.py#L11)** — Type alias for `numpy.ndarray` with `float64` dtype
