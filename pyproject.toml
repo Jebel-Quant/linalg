@@ -45,7 +45,8 @@ include = [
 dev = [
     "hypothesis>=6.0.0",
     "pandas>=2.0.0",
-    "marimo>=0.20.0"
+    "marimo>=0.20.0",
+    "pytest>=9.0.3",
 ]
 
 [tool.interrogate]
@@ -53,5 +54,14 @@ fail-under = 100
 ignore-init-method = true
 ignore-magic = true
 
+[tool.deptry]
+known_first_party = ["cvx"]
+
 [tool.deptry.package_module_name_map]
 numpy = "numpy"
+polars = "polars"
+hypothesis = "hypothesis"
+pandas = "pandas"
+marimo = "marimo"
+pytest = "pytest"
+"cvx-linalg" = "cvx"
