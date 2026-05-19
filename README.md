@@ -20,9 +20,10 @@ pip install cvx-linalg
 
 ```python
 from cvx.linalg import (
-    a_norm, cholesky, ewm_covariance,
+    a_norm, cholesky,
     inv, inv_a_norm, is_positive_definite, lstsq, pca, rand_cov, solve, valid,
 )
+from cvx.linalg.ewm_cov import ewm_covariance  # requires polars
 ```
 
 ## Functions

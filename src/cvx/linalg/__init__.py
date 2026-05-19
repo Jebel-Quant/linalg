@@ -2,7 +2,7 @@
 
 This subpackage provides linear algebra utilities commonly used in risk modeling,
 including Cholesky decomposition, Principal Component Analysis, matrix norms,
-linear-system solving, matrix validation, and EWM covariance estimation.
+linear-system solving, and matrix validation.
 
 Example:
     >>> import numpy as np
@@ -21,7 +21,6 @@ Functions:
     eigvals: Compute eigenvalues of a general square matrix
     eigh: Compute eigenvalues and eigenvectors of a symmetric/Hermitian matrix
     eigvalsh: Compute eigenvalues of a symmetric/Hermitian matrix
-    ewm_covariance: Compute exponentially weighted covariance matrices
     inv: Invert a matrix with NaN-aware matrix filtering and condition-number guarding
     inv_a_norm: Compute the inverse matrix norm of a vector
     lstsq: Solve least-squares problems with NaN-aware row filtering
@@ -41,8 +40,6 @@ from .det import det as det
 from .eigh import eigh as eigh
 from .eigh import eigvalsh as eigvalsh
 from .eigvals import eigvals as eigvals
-from .ewm_cov import NegativeWarmupError as NegativeWarmupError
-from .ewm_cov import ewm_covariance as ewm_covariance
 from .exceptions import DimensionMismatchError as DimensionMismatchError
 from .exceptions import IllConditionedMatrixWarning as IllConditionedMatrixWarning
 from .exceptions import NonSquareMatrixError as NonSquareMatrixError
