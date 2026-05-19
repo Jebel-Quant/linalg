@@ -7,11 +7,8 @@ exclude: []
 templates:
 - core
 - github
-- book
 - github-book
-- tests
 - github-tests
-- marimo
 - github-marimo
 - legal
 files:
@@ -101,5 +98,5 @@ files:
 - docs/mkdocs-base.yml
 - pytest.ini
 - ruff.toml
-synced_at: '2026-05-19T03:41:04Z'
+synced_at: '2026-05-19T03:43:15Z'
 strategy: merge
