@@ -4,10 +4,10 @@ ref: "v0.10.7"
 templates:
   - core
   - github
-  - book
+  #- book
   - github-book
-  - tests
+  #- tests
   - github-tests
-  - marimo
+  #- marimo
   - github-marimo
   - legal
