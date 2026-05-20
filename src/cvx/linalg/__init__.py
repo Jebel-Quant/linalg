@@ -17,6 +17,7 @@ Functions:
     a_norm: Compute the matrix norm of a vector
     cholesky: Compute upper triangular Cholesky decomposition
     cond: Return the condition number of a matrix (NaN-aware)
+    cov_to_corr: Convert a covariance matrix to a correlation matrix
     det: Compute the determinant of a square matrix
     eigvals: Compute eigenvalues of a general square matrix
     eigh: Compute eigenvalues and eigenvectors of a symmetric/Hermitian matrix
@@ -36,6 +37,7 @@ Functions:
 
 from .cholesky import cholesky as cholesky
 from .cholesky import is_positive_definite as is_positive_definite
+from .cov_to_corr import cov_to_corr as cov_to_corr
 from .det import det as det
 from .eigh import eigh as eigh
 from .eigh import eigvalsh as eigvalsh
