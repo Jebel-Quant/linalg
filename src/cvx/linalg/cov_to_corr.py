@@ -30,7 +30,7 @@ def cov_to_corr(cov: np.ndarray, min_var: float = 1e-14) -> np.ndarray:
         >>> corr = cov_to_corr(cov)
         >>> np.allclose(np.diag(corr), [1.0, 1.0])
         True
-        >>> round(corr[0, 1], 6)
+        >>> float(round(corr[0, 1], 6))
         0.333333
     """
     var = np.diag(cov)
