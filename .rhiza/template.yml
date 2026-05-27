@@ -4,8 +4,4 @@ ref: "v0.17.0"
 profiles:
   - github-project
 templates:
-  - github
-  #- github-book
-  - github-marimo
-  #- github-tests
   - legal
