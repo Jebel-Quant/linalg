@@ -16,6 +16,7 @@ classifiers = [
   "Intended Audience :: Financial and Insurance Industry",
   "Intended Audience :: Science/Research",
   "Topic :: Scientific/Engineering :: Mathematics",
+  "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
@@ -24,7 +25,8 @@ classifiers = [
 ]
 
 [project.urls]
-repository = "https://github.com/Jebel-Quant/linalg"
+Homepage = "https://github.com/Jebel-Quant/linalg"
+Repository = "https://github.com/Jebel-Quant/linalg"
 
 
 [build-system]
@@ -48,11 +50,12 @@ dev = [
     "marimo>=0.20.0",
     "pytest>=9.0.3",
 ]
-
-[tool.interrogate]
-fail-under = 100
-ignore-init-method = true
-ignore-magic = true
+test = [
+    "pytest>=9.0.3",
+]
+lint = [
+    "ruff>=0.4.0",
+]
 
 [tool.deptry]
 known_first_party = ["cvx"]
