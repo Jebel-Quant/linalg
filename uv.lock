@@ -145,7 +145,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "hypothesis", specifier = ">=6.0.0" },
+    { name = "hypothesis", specifier = ">=6.150.0" },
     { name = "marimo", specifier = ">=0.20.0" },
     { name = "pandas", specifier = ">=3.0.0" },
     { name = "pytest", specifier = ">=9.0.3" },
