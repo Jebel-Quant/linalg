@@ -46,7 +46,7 @@ include = [
 [dependency-groups]
 dev = [
     "hypothesis>=6.0.0",
-    "pandas>=2.0.0",
+    "pandas>=3.0.0",
     "marimo>=0.20.0",
     "pytest>=9.0.3",
 ]

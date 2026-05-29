@@ -147,7 +147,7 @@ requires-dist = [
 dev = [
     { name = "hypothesis", specifier = ">=6.0.0" },
     { name = "marimo", specifier = ">=0.20.0" },
-    { name = "pandas", specifier = ">=2.0.0" },
+    { name = "pandas", specifier = ">=3.0.0" },
     { name = "pytest", specifier = ">=9.0.3" },
 ]
 lint = [{ name = "ruff", specifier = ">=0.4.0" }]
