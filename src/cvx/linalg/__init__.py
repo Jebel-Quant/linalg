@@ -16,6 +16,7 @@ Example:
 Functions:
     a_norm: Compute the matrix norm of a vector
     cholesky: Compute upper triangular Cholesky decomposition
+    cholesky_solve: Solve a linear system via Cholesky with LU fallback
     cond: Return the condition number of a matrix (NaN-aware)
     cov_to_corr: Convert a covariance matrix to a correlation matrix
     det: Compute the determinant of a square matrix
@@ -35,20 +36,28 @@ Functions:
 
 """
 
+from importlib.metadata import PackageNotFoundError, version
+
 from .cholesky import cholesky as cholesky
+from .cholesky import cholesky_solve as cholesky_solve
 from .cholesky import is_positive_definite as is_positive_definite
 from .cov_to_corr import cov_to_corr as cov_to_corr
 from .det import det as det
 from .eigh import eigh as eigh
 from .eigh import eigvalsh as eigvalsh
 from .eigvals import eigvals as eigvals
+from .exceptions import DEFAULT_COND_THRESHOLD as DEFAULT_COND_THRESHOLD
 from .exceptions import DimensionMismatchError as DimensionMismatchError
 from .exceptions import IllConditionedMatrixWarning as IllConditionedMatrixWarning
+from .exceptions import InvalidComponentsError as InvalidComponentsError
+from .exceptions import NegativeWarmupError as NegativeWarmupError
+from .exceptions import NonIntegerWarmupError as NonIntegerWarmupError
 from .exceptions import NonSquareMatrixError as NonSquareMatrixError
 from .exceptions import NotAMatrixError as NotAMatrixError
 from .exceptions import SingularMatrixError as SingularMatrixError
 from .exceptions import check_and_warn_condition as check_and_warn_condition
 from .exceptions import cond as cond
+from .exceptions import warn_ill_conditioned as warn_ill_conditioned
 from .inv import inv as inv
 from .lstsq import lstsq as lstsq
 from .norm import a_norm as a_norm
@@ -61,3 +70,8 @@ from .solve import solve as solve
 from .svd import svd as svd
 from .types import Matrix as Matrix
 from .valid import valid as valid
+
+try:
+    __version__ = version("cvx-linalg")
+except PackageNotFoundError:  # pragma: no cover
+    __version__ = "0.0.0"

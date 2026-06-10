@@ -46,11 +46,11 @@ def test_solve_requires_square_matrix() -> None:
 
 
 def test_solve_singular_matrix_raises() -> None:
-    """Test that solve raises SingularMatrixError for a singular system."""
+    """Test that solve warns and raises SingularMatrixError for a singular system."""
     matrix = np.array([[1.0, 1.0], [1.0, 1.0]])
     rhs = np.array([1.0, 2.0])
 
-    with pytest.raises(SingularMatrixError):
+    with pytest.warns(IllConditionedMatrixWarning), pytest.raises(SingularMatrixError):
         solve(matrix, rhs)
 
 
@@ -100,6 +100,18 @@ def test_solve_low_threshold_triggers_warning() -> None:
 
     with pytest.warns(IllConditionedMatrixWarning):
         solve(matrix=matrix, rhs=rhs, cond_threshold=0.5)
+
+
+def test_solve_matrix_rhs() -> None:
+    """Test that solve supports matrix right-hand sides with NaN masking."""
+    matrix = np.array([[4.0, 0.0], [0.0, np.nan]])
+    rhs = np.array([[8.0, 4.0], [1.0, 2.0]])
+
+    result = solve(matrix, rhs)
+
+    assert result.shape == (2, 2)
+    np.testing.assert_allclose(result[0], np.array([2.0, 1.0]))
+    assert np.all(np.isnan(result[1]))
 
 
 def test_solve_non_positive_definite_fallback() -> None:

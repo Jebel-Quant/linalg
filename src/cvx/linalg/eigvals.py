@@ -24,7 +24,7 @@ def eigvals(matrix: np.ndarray) -> np.ndarray:
         NonSquareMatrixError: If *matrix* is not square.
     """
     if matrix.ndim != 2:
-        raise NotAMatrixError(matrix.ndim)
+        raise NotAMatrixError(matrix.ndim, func="eigvals")
 
     if matrix.shape[0] != matrix.shape[1]:
         raise NonSquareMatrixError(matrix.shape[0], matrix.shape[1])

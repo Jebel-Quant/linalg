@@ -4,9 +4,8 @@ from __future__ import annotations
 
 import numpy as np
 
-from .exceptions import NonSquareMatrixError
+from .exceptions import DEFAULT_COND_THRESHOLD, NonSquareMatrixError
 from .exceptions import check_and_warn_condition as _check_and_warn_condition
-from .solve import _DEFAULT_COND_THRESHOLD
 from .valid import valid
 
 _SENTINEL = float("nan")
@@ -14,7 +13,7 @@ _SENTINEL = float("nan")
 
 def det(
     matrix: np.ndarray,
-    cond_threshold: float = _DEFAULT_COND_THRESHOLD,
+    cond_threshold: float = DEFAULT_COND_THRESHOLD,
 ) -> float:
     """Return the determinant of a square matrix.
 

@@ -1,15 +1,26 @@
-"""Exponentially weighted covariance matrix computation."""
+"""Exponentially weighted covariance matrix computation.
+
+This module requires the optional ``polars`` dependency. Install it with
+``pip install cvx-linalg[ewm]``.
+"""
 
 from __future__ import annotations
 
 from collections.abc import Hashable
 
 import numpy as np
-import polars as pl
 
+from .exceptions import NegativeWarmupError as NegativeWarmupError
+from .exceptions import NonIntegerWarmupError
 
-class NegativeWarmupError(ValueError):
-    """Raised when warmup is a negative integer."""
+try:
+    import polars as pl
+except ImportError as exc:  # pragma: no cover
+    _msg = (
+        "polars is required for cvx.linalg.ewm_cov; "
+        "install it with `pip install cvx-linalg[ewm]` or `pip install polars`."
+    )
+    raise ImportError(_msg) from exc
 
 
 def ewm_covariance(
@@ -53,11 +64,15 @@ def ewm_covariance(
         where ``n`` is the number of assets.  Row/column order
         matches *assets*.  Unavailable cells are ``NaN``.
 
+    Raises:
+        NonIntegerWarmupError: If *warmup* is not an integer (booleans included).
+        NegativeWarmupError: If *warmup* is negative.
+
     """
     if isinstance(warmup, bool) or not isinstance(warmup, int):
-        raise TypeError
+        raise NonIntegerWarmupError(warmup)
     if warmup < 0:
-        raise NegativeWarmupError
+        raise NegativeWarmupError(warmup)
 
     n = len(assets)
     min_samples = 1 if warmup == 0 else warmup

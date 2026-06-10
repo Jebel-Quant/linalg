@@ -16,46 +16,58 @@ Linear algebra utilities for portfolio optimization, part of the [jebel-quant](h
 pip install cvx-linalg
 ```
 
+The `ewm_covariance` function requires the optional [Polars](https://pola.rs) dependency:
+
+```bash
+pip install 'cvx-linalg[ewm]'
+```
+
 ## Usage
 
 ```python
 from cvx.linalg import (
-    a_norm, cholesky,
+    a_norm, cholesky, cholesky_solve,
     inv, inv_a_norm, is_positive_definite, lstsq, pca, rand_cov, solve, valid,
 )
-from cvx.linalg.ewm_cov import ewm_covariance  # requires polars
+from cvx.linalg.ewm_cov import ewm_covariance  # requires the 'ewm' extra (polars)
 ```
 
 ## Functions
 
-- **[`a_norm(vector, matrix=None)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/norm.py#L20)** — Euclidean norm or NaN-aware matrix norm
-- **[`cholesky(cov, rhs=None)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/cholesky.py#L9)** — Upper triangular Cholesky factor R such that R.T @ R = cov; when *rhs* is given, solves cov @ x = rhs (falls back to LU for non-positive-definite matrices)
-- **[`cond(matrix, p=None)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/exceptions.py#L82)** — Condition number of a matrix (NaN-aware); accepts the same `p` norm values as `numpy.linalg.cond`
-- **[`det(matrix, cond_threshold=1e12)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/det.py#L18)** — Determinant of a square matrix with NaN-aware submatrix handling; emits `IllConditionedMatrixWarning` when near-singular
-- **[`eigvals(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/eigvals.py#L10)** — Eigenvalues of a general square matrix (supports complex output for non-symmetric matrices)
-- **[`eigh(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/eigh.py#L10)** — Eigenvalues/eigenvectors of the valid symmetric/Hermitian submatrix in ascending eigenvalue order
-- **[`eigvalsh(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/eigh.py#L26)** — Eigenvalues-only convenience wrapper around `eigh`
-- **[`ewm_covariance(data, assets, index_col, window, is_halflife, warmup)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/ewm_cov.py#L15)** — Exponentially weighted covariance matrices from a Polars DataFrame
-- **[`inv(matrix, cond_threshold=1e12)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/inv.py#L20)** — Invert a matrix restricted to valid rows/columns; NaN rows/columns are returned for invalid positions
-- **[`inv_a_norm(vector, matrix=None)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/norm.py#L58)** — Euclidean norm or inverse NaN-aware matrix norm
-- **[`lstsq(matrix, rhs, cond_threshold=1e12)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/lstsq.py#L15)** — Solve a least-squares system with NaN-aware row filtering; returns `(x, residuals, rank, sv)` consistent with `numpy.linalg.lstsq`
-- **[`is_positive_definite(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/cholesky.py#L57)** — Return True if the matrix is symmetric positive-definite
-- **[`pca(returns, n_components)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/pca.py#L61)** — Principal Component Analysis via SVD
-- **[`qr(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/qr.py#L10)** — Reduced QR decomposition, matching `np.linalg.qr(mode='reduced')`
-- **[`rand_cov(n, seed)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/rand_cov.py#L29)** — Random positive semi-definite covariance matrix
-- **[`solve(matrix, rhs, cond_threshold=1e12)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/solve.py#L22)** — Solve a linear system restricted to valid rows/columns; NaN entries are returned for invalid positions
-- **[`svd(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/svd.py#L11)** — Raw compact singular value decomposition via `np.linalg.svd(full_matrices=False)`
-- **[`valid(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/valid.py#L32)** — Return a boolean mask and valid submatrix by removing rows/columns with non-finite diagonal entries
+- **[`a_norm(vector, matrix=None)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/norm.py)** — Euclidean norm or NaN-aware matrix norm
+- **[`cholesky(cov)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/cholesky.py)** — Upper triangular Cholesky factor R such that R.T @ R = cov
+- **[`cholesky_solve(cov, rhs)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/cholesky.py)** — Solve cov @ x = rhs via Cholesky decomposition (falls back to LU for non-positive-definite matrices)
+- **[`cond(matrix, p=None)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/exceptions.py)** — Condition number of a matrix (NaN-aware); accepts the same `p` norm values as `numpy.linalg.cond`
+- **[`det(matrix, cond_threshold=1e12)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/det.py)** — Determinant of a square matrix with NaN-aware submatrix handling; emits `IllConditionedMatrixWarning` when near-singular
+- **[`eigvals(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/eigvals.py)** — Eigenvalues of a general square matrix (supports complex output for non-symmetric matrices)
+- **[`eigh(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/eigh.py)** — Eigenvalues/eigenvectors of the valid symmetric/Hermitian submatrix in ascending eigenvalue order
+- **[`eigvalsh(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/eigh.py)** — Eigenvalues-only convenience wrapper around `eigh`
+- **[`ewm_covariance(data, assets, index_col, window, is_halflife, warmup)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/ewm_cov.py)** — Exponentially weighted covariance matrices from a Polars DataFrame
+- **[`inv(matrix, cond_threshold=1e12)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/inv.py)** — Invert a matrix restricted to valid rows/columns; NaN rows/columns are returned for invalid positions
+- **[`inv_a_norm(vector, matrix=None)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/norm.py)** — Euclidean norm or inverse NaN-aware matrix norm
+- **[`lstsq(matrix, rhs, cond_threshold=1e12)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/lstsq.py)** — Solve a least-squares system with NaN-aware row filtering; returns `(x, residuals, rank, sv)` consistent with `numpy.linalg.lstsq`
+- **[`is_positive_definite(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/cholesky.py)** — Return True if the matrix is symmetric positive-definite
+- **[`pca(returns, n_components)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/pca.py)** — Principal Component Analysis via SVD
+- **[`qr(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/qr.py)** — Reduced QR decomposition, matching `np.linalg.qr(mode='reduced')`
+- **[`rand_cov(n, seed)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/rand_cov.py)** — Random positive semi-definite covariance matrix
+- **[`solve(matrix, rhs, cond_threshold=1e12)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/solve.py)** — Solve a linear system (vector or matrix rhs) restricted to valid rows/columns; NaN entries are returned for invalid positions
+- **[`svd(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/svd.py)** — Raw compact singular value decomposition via `np.linalg.svd(full_matrices=False)`
+- **[`valid(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/valid.py)** — Return a boolean mask and valid submatrix by removing rows/columns with non-finite diagonal entries
 
 ## Exceptions & Warnings
 
-- **[`DimensionMismatchError`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/exceptions.py#L31)** — Raised when vector length does not match matrix dimension
-- **[`IllConditionedMatrixWarning`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/exceptions.py#L73)** — Emitted when the condition number exceeds a configurable threshold
-- **[`NegativeWarmupError`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/ewm_cov.py#L11)** — Raised when a negative warmup period is passed to `ewm_covariance`
-- **[`NonSquareMatrixError`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/exceptions.py#L10)** — Raised when a square matrix is required but the input is not square
-- **[`SingularMatrixError`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/exceptions.py#L52)** — Raised when a matrix is numerically singular
-- **[`check_and_warn_condition(matrix, threshold)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/exceptions.py#L82)** — Emit `IllConditionedMatrixWarning` when the condition number exceeds the threshold
+All exceptions and warnings live in [`exceptions.py`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/exceptions.py):
+
+- **`DimensionMismatchError`** — Raised when vector length does not match matrix dimension
+- **`IllConditionedMatrixWarning`** — Emitted when the condition number exceeds a configurable threshold
+- **`InvalidComponentsError`** — Raised when `pca` is asked for fewer than 1 or more components than the data supports
+- **`NegativeWarmupError`** — Raised when a negative warmup period is passed to `ewm_covariance`
+- **`NonIntegerWarmupError`** — Raised when a non-integer warmup is passed to `ewm_covariance`
+- **`NonSquareMatrixError`** — Raised when a square matrix is required but the input is not square
+- **`NotAMatrixError`** — Raised when a 2-D matrix is required but the input has different dimensionality
+- **`SingularMatrixError`** — Raised when a matrix is numerically singular
+- **`check_and_warn_condition(matrix, threshold)`** — Emit `IllConditionedMatrixWarning` when the condition number exceeds the threshold
 
 ## Types
 
-- **[`Matrix`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/types.py#L11)** — Type alias for `numpy.ndarray` with `float64` dtype
+- **[`Matrix`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/types.py)** — Type alias for `numpy.ndarray` with `float64` dtype

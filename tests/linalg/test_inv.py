@@ -64,9 +64,9 @@ def test_inv_requires_square_matrix() -> None:
 
 
 def test_inv_singular_matrix_raises() -> None:
-    """Test that inv raises SingularMatrixError for a singular matrix."""
+    """Test that inv warns and raises SingularMatrixError for a singular matrix."""
     matrix = np.array([[1.0, 1.0], [1.0, 1.0]])
-    with pytest.raises(SingularMatrixError):
+    with pytest.warns(IllConditionedMatrixWarning), pytest.raises(SingularMatrixError):
         inv(matrix)
 
 

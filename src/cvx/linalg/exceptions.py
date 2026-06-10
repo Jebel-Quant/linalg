@@ -7,24 +7,33 @@ from typing import Literal
 
 import numpy as np
 
+DEFAULT_COND_THRESHOLD: float = 1e12
+"""Default condition-number threshold above which an IllConditionedMatrixWarning is emitted."""
+
 
 class NotAMatrixError(TypeError):
     """Raised when a 2-D matrix is required but the input has a different number of dimensions.
 
     Args:
         ndim: Actual number of dimensions of the offending array.
+        func: Name of the function that rejected the input.
 
     Examples:
         >>> raise NotAMatrixError(3)
         Traceback (most recent call last):
             ...
         cvx.linalg.exceptions.NotAMatrixError: eigvals() expected a 2-D matrix, got 3-D input.
+        >>> raise NotAMatrixError(3, func="qr")
+        Traceback (most recent call last):
+            ...
+        cvx.linalg.exceptions.NotAMatrixError: qr() expected a 2-D matrix, got 3-D input.
     """
 
-    def __init__(self, ndim: int) -> None:
-        """Initialize with the actual number of dimensions."""
-        super().__init__(f"eigvals() expected a 2-D matrix, got {ndim}-D input.")
+    def __init__(self, ndim: int, func: str = "eigvals") -> None:
+        """Initialize with the actual number of dimensions and the rejecting function."""
+        super().__init__(f"{func}() expected a 2-D matrix, got {ndim}-D input.")
         self.ndim = ndim
+        self.func = func
 
 
 class NonSquareMatrixError(ValueError):
@@ -90,6 +99,68 @@ class SingularMatrixError(ValueError):
         super().__init__(msg)
 
 
+class NegativeWarmupError(ValueError):
+    """Raised when a negative warmup period is requested.
+
+    Args:
+        warmup: The offending warmup value.
+
+    Examples:
+        >>> raise NegativeWarmupError(-3)
+        Traceback (most recent call last):
+            ...
+        cvx.linalg.exceptions.NegativeWarmupError: warmup must be non-negative, got -3.
+    """
+
+    def __init__(self, warmup: int | None = None) -> None:
+        """Initialize with the offending warmup value."""
+        msg = "warmup must be non-negative."
+        if warmup is not None:
+            msg = f"warmup must be non-negative, got {warmup}."
+        super().__init__(msg)
+        self.warmup = warmup
+
+
+class NonIntegerWarmupError(TypeError):
+    """Raised when warmup is not an integer (booleans are rejected as well).
+
+    Args:
+        value: The offending warmup value.
+
+    Examples:
+        >>> raise NonIntegerWarmupError(True)
+        Traceback (most recent call last):
+            ...
+        cvx.linalg.exceptions.NonIntegerWarmupError: warmup must be an integer, got bool.
+    """
+
+    def __init__(self, value: object) -> None:
+        """Initialize with the offending warmup value."""
+        super().__init__(f"warmup must be an integer, got {type(value).__name__}.")
+        self.value = value
+
+
+class InvalidComponentsError(ValueError):
+    """Raised when the requested number of principal components is out of range.
+
+    Args:
+        n_components: The requested number of components.
+        max_components: The largest number of components supported by the data.
+
+    Examples:
+        >>> raise InvalidComponentsError(10, 5)
+        Traceback (most recent call last):
+            ...
+        cvx.linalg.exceptions.InvalidComponentsError: n_components must be between 1 and 5, got 10.
+    """
+
+    def __init__(self, n_components: int, max_components: int) -> None:
+        """Initialize with the requested and maximum number of components."""
+        super().__init__(f"n_components must be between 1 and {max_components}, got {n_components}.")
+        self.n_components = n_components
+        self.max_components = max_components
+
+
 class IllConditionedMatrixWarning(UserWarning):
     """Emitted when a matrix condition number exceeds a configurable threshold.
 
@@ -133,6 +204,32 @@ def cond(matrix: np.ndarray, p: int | float | Literal["fro", "nuc"] | None = Non
     return float(np.linalg.cond(matrix, p=p))
 
 
+def warn_ill_conditioned(cond_value: float, threshold: float, stacklevel: int = 3) -> None:
+    """Emit IllConditionedMatrixWarning when *cond_value* exceeds *threshold*.
+
+    Args:
+        cond_value: Condition number to compare against the threshold.
+        threshold: Upper bound before a warning is issued.
+        stacklevel: Stack level passed to :func:`warnings.warn` so the warning
+            points at the caller of the public API. Defaults to ``3``.
+
+    Example:
+        >>> import warnings
+        >>> with warnings.catch_warnings(record=True) as w:
+        ...     warnings.simplefilter("always")
+        ...     warn_ill_conditioned(2.0, 0.5)
+        ...     len(w)
+        1
+    """
+    if cond_value > threshold:
+        warnings.warn(
+            f"Matrix condition number {cond_value:.3e} exceeds threshold {threshold:.3e}; "
+            "results may be numerically unreliable.",
+            IllConditionedMatrixWarning,
+            stacklevel=stacklevel,
+        )
+
+
 def check_and_warn_condition(matrix: np.ndarray, threshold: float) -> None:
     """Emit IllConditionedMatrixWarning when the condition number exceeds threshold.
 
@@ -149,11 +246,4 @@ def check_and_warn_condition(matrix: np.ndarray, threshold: float) -> None:
         ...     len(w)
         1
     """
-    c = cond(matrix)
-    if c > threshold:
-        warnings.warn(
-            f"Matrix condition number {c:.3e} exceeds threshold {threshold:.3e}; "
-            "results may be numerically unreliable.",
-            IllConditionedMatrixWarning,
-            stacklevel=3,
-        )
+    warn_ill_conditioned(cond(matrix), threshold, stacklevel=4)

@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from cvx.linalg import cholesky, is_positive_definite, rand_cov
+from cvx.linalg import cholesky, cholesky_solve, is_positive_definite, rand_cov
 
 
 def test_cholesky() -> None:
@@ -98,3 +98,26 @@ def test_is_positive_definite_scalar_positive() -> None:
 def test_is_positive_definite_scalar_zero() -> None:
     """Test that a 1x1 zero matrix is not positive-definite."""
     assert is_positive_definite(np.array([[0.0]])) is False
+
+
+def test_cholesky_solve_matches_two_arg_cholesky() -> None:
+    """Test that cholesky_solve matches the two-argument cholesky call."""
+    a = rand_cov(5, seed=7)
+    rhs = np.random.default_rng(7).standard_normal(5)
+    np.testing.assert_allclose(cholesky_solve(a, rhs), cholesky(a, rhs))
+
+
+def test_cholesky_solve_matrix_rhs() -> None:
+    """Test that cholesky_solve supports matrix right-hand sides."""
+    a = rand_cov(4, seed=1)
+    rhs = np.random.default_rng(1).standard_normal((4, 3))
+    x = cholesky_solve(a, rhs)
+    assert x.shape == (4, 3)
+    np.testing.assert_allclose(a @ x, rhs, atol=1e-10)
+
+
+def test_cholesky_solve_non_pd_falls_back_to_lu() -> None:
+    """Test that cholesky_solve falls back to LU for an indefinite matrix."""
+    matrix = np.array([[1.0, 0.0], [0.0, -1.0]])
+    rhs = np.array([2.0, -3.0])
+    np.testing.assert_allclose(cholesky_solve(matrix, rhs), np.array([2.0, 3.0]))

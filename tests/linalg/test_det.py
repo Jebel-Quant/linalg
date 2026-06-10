@@ -63,6 +63,8 @@ def test_det_high_threshold_suppresses_warning() -> None:
 
 
 def test_det_singular_matrix() -> None:
-    """Test that det returns 0 for a singular matrix."""
+    """Test that det returns 0 (and warns) for a singular matrix."""
     matrix = np.array([[1.0, 1.0], [1.0, 1.0]])
-    assert det(matrix) == pytest.approx(0.0, abs=1e-12)
+    with pytest.warns(IllConditionedMatrixWarning):
+        result = det(matrix)
+    assert result == pytest.approx(0.0, abs=1e-12)

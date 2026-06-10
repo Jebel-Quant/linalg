@@ -5,6 +5,7 @@ from __future__ import annotations
 import numpy as np
 
 from .exceptions import (
+    DEFAULT_COND_THRESHOLD,
     NonSquareMatrixError,
     SingularMatrixError,
 )
@@ -13,13 +14,10 @@ from .exceptions import (
 )
 from .valid import valid
 
-_DEFAULT_COND_THRESHOLD: float = 1e12
-"""Default condition-number threshold above which a warning is emitted."""
-
 
 def inv(
     matrix: np.ndarray,
-    cond_threshold: float = _DEFAULT_COND_THRESHOLD,
+    cond_threshold: float = DEFAULT_COND_THRESHOLD,
 ) -> np.ndarray:
     """Invert a matrix restricted to the valid submatrix.
 

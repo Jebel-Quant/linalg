@@ -10,7 +10,11 @@ import pytest
 from cvx.linalg import (
     DimensionMismatchError,
     IllConditionedMatrixWarning,
+    InvalidComponentsError,
+    NegativeWarmupError,
+    NonIntegerWarmupError,
     NonSquareMatrixError,
+    NotAMatrixError,
     SingularMatrixError,
     cond,
 )
@@ -21,6 +25,31 @@ def test_exception_hierarchy() -> None:
     assert issubclass(NonSquareMatrixError, ValueError)
     assert issubclass(DimensionMismatchError, ValueError)
     assert issubclass(SingularMatrixError, ValueError)
+    assert issubclass(NegativeWarmupError, ValueError)
+    assert issubclass(InvalidComponentsError, ValueError)
+    assert issubclass(NonIntegerWarmupError, TypeError)
+    assert issubclass(NotAMatrixError, TypeError)
+
+
+def test_not_a_matrix_error_function_name() -> None:
+    """Test that NotAMatrixError includes the rejecting function's name."""
+    assert "qr()" in str(NotAMatrixError(3, func="qr"))
+    assert "eigvals()" in str(NotAMatrixError(3))
+
+
+def test_warmup_errors_have_messages() -> None:
+    """Test that warmup errors carry informative messages."""
+    assert "-3" in str(NegativeWarmupError(-3))
+    assert "bool" in str(NonIntegerWarmupError(True))
+
+
+def test_invalid_components_error_attributes() -> None:
+    """Test that InvalidComponentsError stores the offending values."""
+    exc = InvalidComponentsError(10, 5)
+    assert exc.n_components == 10
+    assert exc.max_components == 5
+    assert "10" in str(exc)
+    assert "5" in str(exc)
 
 
 def test_non_square_matrix_error_attributes() -> None:

@@ -135,11 +135,11 @@ def test_inv_a_norm_all_invalid_matrix_returns_nan() -> None:
 
 
 def test_inv_a_norm_singular_matrix_raises() -> None:
-    """Test that inv_a_norm raises SingularMatrixError for a singular system."""
+    """Test that inv_a_norm warns and raises SingularMatrixError for a singular system."""
     vector = np.array([1.0, 2.0])
     matrix = np.array([[1.0, 1.0], [1.0, 1.0]])
 
-    with pytest.raises(SingularMatrixError):
+    with pytest.warns(IllConditionedMatrixWarning), pytest.raises(SingularMatrixError):
         inv_a_norm(vector, matrix)
 
 

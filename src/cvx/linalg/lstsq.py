@@ -2,20 +2,16 @@
 
 from __future__ import annotations
 
-import warnings
-
 import numpy as np
 
-from .exceptions import DimensionMismatchError, IllConditionedMatrixWarning
-
-_DEFAULT_COND_THRESHOLD: float = 1e12
-"""Default condition-number threshold above which a warning is emitted."""
+from .exceptions import DEFAULT_COND_THRESHOLD, DimensionMismatchError
+from .exceptions import warn_ill_conditioned as _warn_ill_conditioned
 
 
 def lstsq(
     matrix: np.ndarray,
     rhs: np.ndarray,
-    cond_threshold: float = _DEFAULT_COND_THRESHOLD,
+    cond_threshold: float = DEFAULT_COND_THRESHOLD,
 ) -> tuple[np.ndarray, np.ndarray, int, np.ndarray]:
     """Solve an overdetermined or underdetermined system in the least-squares sense.
 
@@ -85,12 +81,6 @@ def lstsq(
     else:
         cond = 1.0
 
-    if cond > cond_threshold:
-        warnings.warn(
-            f"Matrix condition number {cond:.3e} exceeds threshold {cond_threshold:.3e}; "
-            "results may be numerically unreliable.",
-            IllConditionedMatrixWarning,
-            stacklevel=2,
-        )
+    _warn_ill_conditioned(cond, cond_threshold)
 
     return x, residuals, rank, sv

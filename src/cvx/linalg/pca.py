@@ -27,9 +27,9 @@ from collections import namedtuple
 
 import numpy as np
 
+from .exceptions import InvalidComponentsError
 from .svd import svd
-
-Matrix = np.ndarray
+from .types import Matrix
 
 PCA = namedtuple(
     "PCA",
@@ -63,9 +63,18 @@ Example:
 def pca(returns: Matrix, n_components: int = 10) -> PCA:
     """Compute the first n principal components for a return matrix using SVD.
 
+    Unlike most functions in this package, ``pca`` is not NaN-aware: *returns*
+    must contain only finite values. Clean or impute missing data first.
+
     Args:
         returns: Array of asset returns with shape (n_samples, n_assets).
-        n_components: Number of principal components to extract. Defaults to 10.
+            Must not contain NaN or infinite values.
+        n_components: Number of principal components to extract. Must be
+            between 1 and ``min(n_samples, n_assets)``. Defaults to 10.
+
+    Raises:
+        InvalidComponentsError: If *n_components* is smaller than 1 or larger
+            than ``min(n_samples, n_assets)``.
 
     Returns:
         PCA named tuple containing:
@@ -99,6 +108,10 @@ def pca(returns: Matrix, n_components: int = 10) -> PCA:
         True
 
     """
+    max_components = min(returns.shape)
+    if not 1 <= n_components <= max_components:
+        raise InvalidComponentsError(n_components, max_components)
+
     x_mean = returns.mean(axis=0)
     x_centered = returns - x_mean
 
@@ -111,7 +124,7 @@ def pca(returns: Matrix, n_components: int = 10) -> PCA:
     factors: Matrix = u * s
     exposure: Matrix = vt
     explained_variance: Matrix = (s**2) / np.sum(s_full**2)
-    cov: Matrix = np.cov(factors.T)
+    cov: Matrix = np.atleast_2d(np.cov(factors.T))
     systematic: Matrix = factors @ vt + x_mean
     idiosyncratic: Matrix = x_centered - factors @ vt
 
