@@ -166,7 +166,11 @@ class IllConditionedMatrixWarning(UserWarning):
 
     Examples:
         >>> import warnings
-        >>> warnings.warn("condition number 1e13", IllConditionedMatrixWarning)
+        >>> with warnings.catch_warnings(record=True) as w:
+        ...     warnings.simplefilter("always")
+        ...     warnings.warn("condition number 1e13", IllConditionedMatrixWarning)
+        ...     issubclass(w[-1].category, IllConditionedMatrixWarning)
+        True
     """
 
 
