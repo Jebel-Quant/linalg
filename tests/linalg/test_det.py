@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import warnings
 
 import numpy as np
@@ -68,3 +69,9 @@ def test_det_singular_matrix() -> None:
     with pytest.warns(IllConditionedMatrixWarning):
         result = det(matrix)
     assert result == pytest.approx(0.0, abs=1e-12)
+
+
+def test_det_non_square_raises_exact_message() -> None:
+    """det() reports the actual (rows, cols) of a non-square input."""
+    with pytest.raises(NonSquareMatrixError, match=re.escape("Matrix must be square, got shape (2, 3).")):
+        det(np.ones((2, 3)))

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import warnings
 
 import numpy as np
@@ -131,4 +132,27 @@ def test_lstsq_zero_columns_returns_empty_solution() -> None:
         warnings.simplefilter("error", IllConditionedMatrixWarning)
         x, _, _rank, sv = lstsq(mat, b)
     assert x.shape == (0,)
+    assert sv.size == 0
+
+
+def test_lstsq_dimension_mismatch_reports_row_count() -> None:
+    """lstsq() reports the matrix ROW count in the mismatch error, not columns."""
+    with pytest.raises(
+        DimensionMismatchError,
+        match=re.escape("Vector length 3 does not match matrix dimension 4."),
+    ):
+        lstsq(np.ones((4, 2)), np.ones(3))
+
+
+def test_lstsq_exactly_singular_single_column_warns() -> None:
+    """A zero single-column system has an infinite condition number and warns."""
+    with pytest.warns(IllConditionedMatrixWarning):
+        lstsq(np.zeros((2, 1)), np.array([1.0, 2.0]))
+
+
+def test_lstsq_zero_columns_has_unit_condition_number() -> None:
+    """With no columns there are no singular values; cond defaults to exactly 1."""
+    x, _residuals, rank, sv = lstsq(np.empty((2, 0)), np.array([1.0, 2.0]), cond_threshold=1.5)
+    assert x.size == 0
+    assert rank == 0
     assert sv.size == 0

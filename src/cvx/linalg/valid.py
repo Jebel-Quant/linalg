@@ -25,11 +25,13 @@ Example:
 from __future__ import annotations
 
 import numpy as np
+import numpy.typing as npt
 
 from .exceptions import NonSquareMatrixError
+from .types import Matrix
 
 
-def valid(matrix: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+def valid(matrix: Matrix) -> tuple[npt.NDArray[np.bool_], Matrix]:
     """Extract the valid subset of a matrix by removing rows/columns with non-finite values.
 
     This function identifies rows and columns in a square matrix that contain

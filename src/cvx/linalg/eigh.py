@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import numpy as np
 
+from .types import Matrix, Vector
 from .valid import valid
 
 
-def eigh(matrix: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+def eigh(matrix: Matrix) -> tuple[Vector, Matrix]:
     """Compute eigendecomposition of a real symmetric or Hermitian matrix.
 
     Rows and columns with non-finite diagonal entries are excluded before
@@ -24,7 +25,7 @@ def eigh(matrix: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     return np.linalg.eigh(submatrix)
 
 
-def eigvalsh(matrix: np.ndarray) -> np.ndarray:
+def eigvalsh(matrix: Matrix) -> Vector:
     """Return eigenvalues of a real symmetric or Hermitian matrix.
 
     Rows and columns with non-finite diagonal entries are excluded before

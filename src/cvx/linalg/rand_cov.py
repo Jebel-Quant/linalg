@@ -25,8 +25,10 @@ from __future__ import annotations
 
 import numpy as np
 
+from .types import Matrix
 
-def rand_cov(n: int, seed: int | None = None) -> np.ndarray:
+
+def rand_cov(n: int, seed: int | None = None) -> Matrix:
     """Construct a random positive semi-definite covariance matrix of size n x n.
 
     The matrix is constructed as A^T @ A where A is a random n x n matrix with

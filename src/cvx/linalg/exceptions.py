@@ -7,6 +7,8 @@ from typing import Literal
 
 import numpy as np
 
+from .types import Matrix
+
 DEFAULT_COND_THRESHOLD: float = 1e12
 """Default condition-number threshold above which an IllConditionedMatrixWarning is emitted."""
 
@@ -174,7 +176,7 @@ class IllConditionedMatrixWarning(UserWarning):
     """
 
 
-def cond(matrix: np.ndarray, p: int | float | Literal["fro", "nuc"] | None = None) -> float:
+def cond(matrix: Matrix, p: int | float | Literal["fro", "nuc"] | None = None) -> float:
     """Return the condition number of a matrix.
 
     Returns ``nan`` if the matrix contains any non-finite (NaN or inf) entries.
@@ -234,7 +236,7 @@ def warn_ill_conditioned(cond_value: float, threshold: float, stacklevel: int = 
         )
 
 
-def check_and_warn_condition(matrix: np.ndarray, threshold: float) -> None:
+def check_and_warn_condition(matrix: Matrix, threshold: float) -> None:
     """Emit IllConditionedMatrixWarning when the condition number exceeds threshold.
 
     Args:

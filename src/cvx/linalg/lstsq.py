@@ -6,13 +6,14 @@ import numpy as np
 
 from .exceptions import DEFAULT_COND_THRESHOLD, DimensionMismatchError
 from .exceptions import warn_ill_conditioned as _warn_ill_conditioned
+from .types import Matrix, Vector
 
 
 def lstsq(
-    matrix: np.ndarray,
-    rhs: np.ndarray,
+    matrix: Matrix,
+    rhs: Vector,
     cond_threshold: float = DEFAULT_COND_THRESHOLD,
-) -> tuple[np.ndarray, np.ndarray, int, np.ndarray]:
+) -> tuple[Vector, Vector, int, Vector]:
     """Solve an overdetermined or underdetermined system in the least-squares sense.
 
     Rows where any entry in *matrix* or the corresponding entry in *rhs* is

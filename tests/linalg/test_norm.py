@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+import re
 import warnings
 
 import numpy as np
@@ -185,3 +186,15 @@ def test_inv_a_norm_pd_matrix_correct_result() -> None:
     v = np.array([1.0, 0.0])
     expected = float(np.sqrt(np.dot(v, np.linalg.solve(matrix, v))))
     assert inv_a_norm(vector=v, matrix=matrix) == pytest.approx(expected)
+
+
+def test_a_norm_non_square_raises_exact_message() -> None:
+    """a_norm() reports the actual (rows, cols) of a non-square matrix."""
+    with pytest.raises(NonSquareMatrixError, match=re.escape("Matrix must be square, got shape (2, 3).")):
+        a_norm(np.ones(2), np.ones((2, 3)))
+
+
+def test_inv_a_norm_non_square_raises_exact_message() -> None:
+    """inv_a_norm() reports the actual (rows, cols) of a non-square matrix."""
+    with pytest.raises(NonSquareMatrixError, match=re.escape("Matrix must be square, got shape (2, 3).")):
+        inv_a_norm(np.ones(2), np.ones((2, 3)))

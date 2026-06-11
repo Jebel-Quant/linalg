@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
+from typing import cast
+
 import numpy as np
+import numpy.typing as npt
 
 from .exceptions import NonSquareMatrixError, NotAMatrixError
+from .types import Matrix, Vector
 
 
-def eigvals(matrix: np.ndarray) -> np.ndarray:
+def eigvals(matrix: Matrix) -> Vector | npt.NDArray[np.complex128]:
     """Return the eigenvalues of a square matrix.
 
     This routine supports general (non-symmetric) square matrices and may
@@ -29,4 +33,4 @@ def eigvals(matrix: np.ndarray) -> np.ndarray:
     if matrix.shape[0] != matrix.shape[1]:
         raise NonSquareMatrixError(matrix.shape[0], matrix.shape[1])
 
-    return np.linalg.eigvals(matrix)
+    return cast("Vector | npt.NDArray[np.complex128]", np.linalg.eigvals(matrix))
