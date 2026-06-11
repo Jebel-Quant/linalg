@@ -1,3 +1,16 @@
+## [0.7.0] - 2026-06-11
+
+### 💼 Other
+
+- Bump version 0.6.2 → 0.7.0
+
+### 🚜 Refactor
+
+- Address code-quality, packaging, and API consistency issues (#50)
+
+### ⚙️ Miscellaneous Tasks
+
+- Update CHANGELOG.md for v0.6.2 [skip ci]
 ## [0.6.2] - 2026-06-08
 
 ### 🐛 Bug Fixes
