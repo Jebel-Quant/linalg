@@ -2,55 +2,57 @@
 
 from __future__ import annotations
 
+import warnings
+from typing import cast
+
 import numpy as np
 from numpy.linalg import cholesky as _cholesky
 
+from .types import Matrix, Vector
 
-def cholesky(cov: np.ndarray, rhs: np.ndarray | None = None) -> np.ndarray:
-    """Compute the upper triangular Cholesky factor, or solve a linear system.
 
-    When called without *rhs*, returns the upper triangular factor R such that
-    R.T @ R = cov.  When *rhs* is given, the call is equivalent to
-    :func:`cholesky_solve`; prefer calling that function directly — the
-    two-argument form is kept for backwards compatibility.
+def cholesky(cov: Matrix, rhs: Vector | Matrix | None = None) -> Vector | Matrix:
+    """Compute the upper triangular Cholesky factor of a covariance matrix.
+
+    Returns the upper triangular factor R such that R.T @ R = cov.
 
     Args:
         cov: A positive definite covariance matrix of shape (n, n).
-        rhs: Optional right-hand side vector or matrix. When provided the
-            system ``cov @ x = rhs`` is solved and *x* is returned.
+        rhs: Deprecated. When provided the system ``cov @ x = rhs`` is solved
+            and *x* is returned; use :func:`cholesky_solve` instead. This
+            parameter will be removed in 1.0.
 
     Returns:
         The upper triangular Cholesky factor R when *rhs* is ``None``, or the
-        solution x to ``cov @ x = rhs`` otherwise.
+        solution x to ``cov @ x = rhs`` otherwise (deprecated).
 
     Raises:
         np.linalg.LinAlgError: When *rhs* is ``None`` and *cov* is not
             positive-definite, or when *rhs* is given and both Cholesky and
             LU-based solves fail.
 
-    Example:
-        Decomposition (no rhs):
+    Warns:
+        DeprecationWarning: When *rhs* is given.
 
+    Example:
         >>> import numpy as np
         >>> from cvx.linalg import cholesky
         >>> cov = np.array([[4.0, 2.0], [2.0, 5.0]])
         >>> R = cholesky(cov)
         >>> np.allclose(R.T @ R, cov)
         True
-
-        Solve (with rhs):
-
-        >>> cholesky(np.eye(2), np.array([1.0, 2.0])).tolist()
-        [1.0, 2.0]
-        >>> cholesky(np.array([[4.0, 0.0], [0.0, 9.0]]), np.array([8.0, 27.0])).tolist()
-        [2.0, 3.0]
     """
     if rhs is None:
-        return _cholesky(cov).transpose()
+        return cast("Matrix", _cholesky(cov).transpose())
+    warnings.warn(
+        "Passing 'rhs' to cholesky() is deprecated and will be removed in 1.0; use cholesky_solve(cov, rhs) instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     return cholesky_solve(cov, rhs)
 
 
-def cholesky_solve(cov: np.ndarray, rhs: np.ndarray) -> np.ndarray:
+def cholesky_solve(cov: Matrix, rhs: Vector | Matrix) -> Vector | Matrix:
     """Solve ``cov @ x = rhs`` using the Cholesky decomposition.
 
     The Cholesky factorisation is attempted first for numerical stability;
@@ -77,12 +79,12 @@ def cholesky_solve(cov: np.ndarray, rhs: np.ndarray) -> np.ndarray:
     """
     try:
         upper = _cholesky(cov).transpose()
-        return np.linalg.solve(upper, np.linalg.solve(upper.T, rhs))
+        return cast("Vector | Matrix", np.linalg.solve(upper, np.linalg.solve(upper.T, rhs)))
     except np.linalg.LinAlgError:
-        return np.linalg.solve(cov, rhs)
+        return cast("Vector | Matrix", np.linalg.solve(cov, rhs))
 
 
-def is_positive_definite(matrix: np.ndarray) -> bool:
+def is_positive_definite(matrix: Matrix) -> bool:
     """Return True if *matrix* is symmetric positive-definite, False otherwise.
 
     The check is performed via an attempted Cholesky decomposition — the most
