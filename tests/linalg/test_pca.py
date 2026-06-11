@@ -81,3 +81,17 @@ def test_pca_single_component_cov_is_2d(returns: np.ndarray) -> None:
     """Test that the factor covariance matrix is 2-D even for a single component."""
     result = pca(returns, n_components=1)
     assert result.cov.shape == (1, 1)
+
+
+def test_pca_result_type_and_exposure() -> None:
+    """pca() returns a namedtuple called PCA whose exposure reconstructs the fit."""
+    rng = np.random.default_rng(0)
+    returns = rng.standard_normal((30, 4))
+    result = pca(returns, n_components=2)
+    assert type(result).__name__ == "PCA"
+    assert result.exposure.shape == (2, 4)
+    np.testing.assert_allclose(
+        result.factors @ result.exposure + returns.mean(axis=0),
+        result.systematic,
+        atol=1e-12,
+    )

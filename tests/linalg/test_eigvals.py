@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+
 import numpy as np
 import pytest
 
@@ -37,3 +39,15 @@ def test_eigvals_requires_2d_input() -> None:
 
     with pytest.raises(NotAMatrixError):
         eigvals(matrix)
+
+
+def test_eigvals_one_dimensional_raises_exact_message() -> None:
+    """eigvals() names itself in the dimensionality error."""
+    with pytest.raises(NotAMatrixError, match=re.escape("eigvals() expected a 2-D matrix, got 1-D input.")):
+        eigvals(np.ones(3))
+
+
+def test_eigvals_non_square_raises_exact_message() -> None:
+    """eigvals() reports the actual (rows, cols) of a non-square input."""
+    with pytest.raises(NonSquareMatrixError, match=re.escape("Matrix must be square, got shape (2, 3).")):
+        eigvals(np.ones((2, 3)))

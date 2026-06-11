@@ -5,6 +5,8 @@ from __future__ import annotations
 import numpy as np
 import polars as pl
 import pytest
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from cvx.linalg.ewm_cov import NegativeWarmupError, ewm_covariance
 
@@ -166,3 +168,51 @@ def test_matches_pandas_ewm_cov() -> None:
             assert mat[1, 1] == pytest.approx(expected_bb, rel=1e-6)
         if np.isfinite(expected_ab):
             assert mat[0, 1] == pytest.approx(expected_ab, rel=1e-6)
+
+
+@given(
+    n_rows=st.integers(min_value=5, max_value=15),
+    window=st.integers(min_value=2, max_value=6),
+    data=st.data(),
+)
+@settings(max_examples=50, deadline=None)
+def test_ewm_covariance_matrices_are_symmetric_with_nonneg_variance(
+    n_rows: int, window: int, data: st.DataObject
+) -> None:
+    """Every EWM covariance matrix is symmetric with non-negative variances."""
+    elements = st.floats(min_value=-10.0, max_value=10.0, allow_nan=False, allow_infinity=False)
+    values_a = data.draw(st.lists(elements, min_size=n_rows, max_size=n_rows))
+    values_b = data.draw(st.lists(elements, min_size=n_rows, max_size=n_rows))
+    df = pl.DataFrame({"date": list(range(n_rows)), "A": values_a, "B": values_b})
+
+    result = ewm_covariance(df, ["A", "B"], "date", window=window)
+
+    assert set(result.keys()) <= set(range(n_rows))
+    for mat in result.values():
+        assert mat.shape == (2, 2)
+        np.testing.assert_allclose(mat, mat.T, rtol=1e-12, atol=1e-12)
+        assert np.all(np.diag(mat) >= -1e-12)
+
+
+def test_ewm_covariance_default_window_is_30(returns: pl.DataFrame) -> None:
+    """The default window equals an explicit window=30."""
+    default = ewm_covariance(returns, ["A", "B"], "date")
+    explicit = ewm_covariance(returns, ["A", "B"], "date", window=30)
+    assert set(default.keys()) == set(explicit.keys())
+    for key, mat in default.items():
+        np.testing.assert_array_equal(mat, explicit[key])
+
+
+def test_ewm_covariance_default_warmup_is_zero(returns: pl.DataFrame) -> None:
+    """The default warmup equals an explicit warmup=0."""
+    default = ewm_covariance(returns, ["A", "B"], "date", window=10)
+    explicit = ewm_covariance(returns, ["A", "B"], "date", window=10, warmup=0)
+    assert set(default.keys()) == set(explicit.keys())
+    for key, mat in default.items():
+        np.testing.assert_array_equal(mat, explicit[key])
+
+
+def test_ewm_covariance_zero_warmup_covers_every_date(returns: pl.DataFrame) -> None:
+    """With warmup=0 every input date gets a covariance matrix."""
+    res = ewm_covariance(returns, ["A", "B"], "date", window=10, warmup=0)
+    assert set(res.keys()) == set(returns["date"].to_list())

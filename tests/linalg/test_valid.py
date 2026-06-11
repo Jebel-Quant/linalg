@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+
 import numpy as np
 import pytest
 
@@ -37,3 +39,9 @@ def test_valid_eye() -> None:
 
     np.testing.assert_array_equal(val, np.array([True, True]))
     np.testing.assert_array_equal(submatrix, np.eye(2))
+
+
+def test_valid_non_square_raises_exact_message() -> None:
+    """valid() reports the actual (rows, cols) of a non-square input."""
+    with pytest.raises(NonSquareMatrixError, match=re.escape("Matrix must be square, got shape (2, 3).")):
+        valid(np.ones((2, 3)))

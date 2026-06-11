@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import warnings
 
 import numpy as np
@@ -121,3 +122,19 @@ def test_solve_non_positive_definite_fallback() -> None:
     rhs = np.array([1.0, 0.0])
     x = solve(matrix=matrix, rhs=rhs)
     np.testing.assert_allclose(matrix @ x, rhs, atol=1e-12)
+
+
+def test_solve_all_invalid_matrix_returns_nan() -> None:
+    """When no row/column is valid, solve returns an all-NaN solution."""
+    matrix = np.full((2, 2), np.nan)
+    rhs = np.array([1.0, 2.0])
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        result = solve(matrix, rhs)
+    assert np.all(np.isnan(result))
+
+
+def test_solve_non_square_raises_exact_message() -> None:
+    """solve() reports the actual (rows, cols) of a non-square input."""
+    with pytest.raises(NonSquareMatrixError, match=re.escape("Matrix must be square, got shape (2, 3).")):
+        solve(np.ones((2, 3)), np.ones(2))

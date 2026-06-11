@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+
 import numpy as np
 import pytest
 
@@ -28,3 +30,9 @@ def test_qr_requires_two_dimensional_matrix() -> None:
     """Test that qr raises NotAMatrixError for non-2D inputs."""
     with pytest.raises(NotAMatrixError, match="qr"):
         qr(np.array([1.0, 2.0, 3.0]))
+
+
+def test_qr_one_dimensional_raises_exact_message() -> None:
+    """qr() names itself in the dimensionality error."""
+    with pytest.raises(NotAMatrixError, match=re.escape("qr() expected a 2-D matrix, got 1-D input.")):
+        qr(np.ones(3))

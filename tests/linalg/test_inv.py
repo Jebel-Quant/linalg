@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import warnings
 
 import numpy as np
@@ -108,3 +109,9 @@ def test_inv_nan_partial_block_correct() -> None:
     # Invalid row/column
     assert np.all(np.isnan(result[1, :]))
     assert np.all(np.isnan(result[:, 1]))
+
+
+def test_inv_non_square_raises_exact_message() -> None:
+    """inv() reports the actual (rows, cols) of a non-square input."""
+    with pytest.raises(NonSquareMatrixError, match=re.escape("Matrix must be square, got shape (2, 3).")):
+        inv(np.ones((2, 3)))
