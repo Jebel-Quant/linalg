@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from .exceptions import DimensionMismatchError
+from .exceptions import NotAMatrixError
 
 
 def qr(matrix: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
@@ -17,7 +17,7 @@ def qr(matrix: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         A tuple ``(Q, R)`` matching ``np.linalg.qr(matrix, mode="reduced")``.
 
     Raises:
-        DimensionMismatchError: If ``matrix`` is not two-dimensional.
+        NotAMatrixError: If ``matrix`` is not two-dimensional.
 
     Example:
         >>> import numpy as np
@@ -27,6 +27,6 @@ def qr(matrix: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         True
     """
     if matrix.ndim != 2:
-        raise DimensionMismatchError(matrix.ndim, 2)
+        raise NotAMatrixError(matrix.ndim, func="qr")
 
     return np.linalg.qr(matrix, mode="reduced")

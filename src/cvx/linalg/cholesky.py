@@ -10,9 +10,9 @@ def cholesky(cov: np.ndarray, rhs: np.ndarray | None = None) -> np.ndarray:
     """Compute the upper triangular Cholesky factor, or solve a linear system.
 
     When called without *rhs*, returns the upper triangular factor R such that
-    R.T @ R = cov.  When *rhs* is given, solves ``cov @ x = rhs`` using the
-    Cholesky decomposition for numerical stability, falling back to LU
-    decomposition if *cov* is not positive-definite.
+    R.T @ R = cov.  When *rhs* is given, the call is equivalent to
+    :func:`cholesky_solve`; prefer calling that function directly — the
+    two-argument form is kept for backwards compatibility.
 
     Args:
         cov: A positive definite covariance matrix of shape (n, n).
@@ -47,6 +47,34 @@ def cholesky(cov: np.ndarray, rhs: np.ndarray | None = None) -> np.ndarray:
     """
     if rhs is None:
         return _cholesky(cov).transpose()
+    return cholesky_solve(cov, rhs)
+
+
+def cholesky_solve(cov: np.ndarray, rhs: np.ndarray) -> np.ndarray:
+    """Solve ``cov @ x = rhs`` using the Cholesky decomposition.
+
+    The Cholesky factorisation is attempted first for numerical stability;
+    when *cov* is not positive-definite the solve falls back to LU
+    decomposition.
+
+    Args:
+        cov: A positive definite covariance matrix of shape (n, n).
+        rhs: Right-hand side vector of length n or matrix of shape (n, k).
+
+    Returns:
+        The solution x to ``cov @ x = rhs`` with the same shape as *rhs*.
+
+    Raises:
+        np.linalg.LinAlgError: When both the Cholesky and LU-based solves fail.
+
+    Example:
+        >>> import numpy as np
+        >>> from cvx.linalg import cholesky_solve
+        >>> cholesky_solve(np.eye(2), np.array([1.0, 2.0])).tolist()
+        [1.0, 2.0]
+        >>> cholesky_solve(np.array([[4.0, 0.0], [0.0, 9.0]]), np.array([8.0, 27.0])).tolist()
+        [2.0, 3.0]
+    """
     try:
         upper = _cholesky(cov).transpose()
         return np.linalg.solve(upper, np.linalg.solve(upper.T, rhs))

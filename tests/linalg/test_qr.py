@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from cvx.linalg import DimensionMismatchError, qr
+from cvx.linalg import NotAMatrixError, qr
 
 
 @pytest.mark.parametrize(
@@ -25,6 +25,6 @@ def test_qr_matches_numpy_reduced(matrix: np.ndarray) -> None:
 
 
 def test_qr_requires_two_dimensional_matrix() -> None:
-    """Test that qr raises DimensionMismatchError for non-2D inputs."""
-    with pytest.raises(DimensionMismatchError):
+    """Test that qr raises NotAMatrixError for non-2D inputs."""
+    with pytest.raises(NotAMatrixError, match="qr"):
         qr(np.array([1.0, 2.0, 3.0]))

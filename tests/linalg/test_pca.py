@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from cvx.linalg import pca
+from cvx.linalg import InvalidComponentsError, pca
 
 
 @pytest.fixture
@@ -63,3 +63,21 @@ def test_pca(returns: np.ndarray) -> None:
             ]
         ),
     )
+
+
+def test_pca_too_many_components_raises(returns: np.ndarray) -> None:
+    """Test that requesting more components than assets raises InvalidComponentsError."""
+    with pytest.raises(InvalidComponentsError):
+        pca(returns, n_components=returns.shape[1] + 1)
+
+
+def test_pca_zero_components_raises(returns: np.ndarray) -> None:
+    """Test that requesting zero components raises InvalidComponentsError."""
+    with pytest.raises(InvalidComponentsError):
+        pca(returns, n_components=0)
+
+
+def test_pca_single_component_cov_is_2d(returns: np.ndarray) -> None:
+    """Test that the factor covariance matrix is 2-D even for a single component."""
+    result = pca(returns, n_components=1)
+    assert result.cov.shape == (1, 1)

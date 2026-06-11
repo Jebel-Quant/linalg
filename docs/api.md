@@ -8,11 +8,11 @@ NaN-aware linear algebra utilities for risk models. All public symbols are
 importable directly from the top-level package:
 
 ```python
-from cvx.linalg import cholesky, eigh, eigvalsh, eigvals, qr, svd, pca
+from cvx.linalg import cholesky, cholesky_solve, eigh, eigvalsh, eigvals, qr, svd, pca
 from cvx.linalg import solve, lstsq, inv
 from cvx.linalg import norm, a_norm, inv_a_norm, cond, det
 from cvx.linalg import rand_cov, valid, is_positive_definite
-from cvx.linalg.ewm_cov import ewm_covariance  # requires polars
+from cvx.linalg.ewm_cov import ewm_covariance  # requires the 'ewm' extra (polars)
 ```
 
 ---
@@ -20,6 +20,8 @@ from cvx.linalg.ewm_cov import ewm_covariance  # requires polars
 ## Decompositions
 
 ::: cvx.linalg.cholesky.cholesky
+
+::: cvx.linalg.cholesky.cholesky_solve
 
 ::: cvx.linalg.cholesky.is_positive_definite
 
@@ -87,4 +89,8 @@ from cvx.linalg.ewm_cov import ewm_covariance  # requires polars
 
 ::: cvx.linalg.exceptions.NotAMatrixError
 
-::: cvx.linalg.ewm_cov.NegativeWarmupError
+::: cvx.linalg.exceptions.NegativeWarmupError
+
+::: cvx.linalg.exceptions.NonIntegerWarmupError
+
+::: cvx.linalg.exceptions.InvalidComponentsError

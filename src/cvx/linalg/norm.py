@@ -6,8 +6,9 @@ from typing import Literal
 
 import numpy as np
 
-from .cholesky import cholesky as _cholesky
+from .cholesky import cholesky_solve as _cholesky_solve
 from .exceptions import (
+    DEFAULT_COND_THRESHOLD,
     DimensionMismatchError,
     NonSquareMatrixError,
     SingularMatrixError,
@@ -15,7 +16,6 @@ from .exceptions import (
 from .exceptions import (
     check_and_warn_condition as _check_and_warn_condition,
 )
-from .solve import _DEFAULT_COND_THRESHOLD
 from .valid import valid
 
 
@@ -90,7 +90,7 @@ def a_norm(vector: np.ndarray, matrix: np.ndarray | None = None) -> float:
 def inv_a_norm(
     vector: np.ndarray,
     matrix: np.ndarray | None = None,
-    cond_threshold: float = _DEFAULT_COND_THRESHOLD,
+    cond_threshold: float = DEFAULT_COND_THRESHOLD,
 ) -> float:
     """Calculate the inverse A-norm of a vector using an optional matrix.
 
@@ -138,7 +138,7 @@ def inv_a_norm(
         _check_and_warn_condition(submatrix, cond_threshold)
         filtered_vector = vector[mask]
         try:
-            solved = _cholesky(submatrix, filtered_vector)
+            solved = _cholesky_solve(submatrix, filtered_vector)
         except np.linalg.LinAlgError as exc:
             raise SingularMatrixError(str(exc)) from exc
         return float(np.sqrt(np.dot(filtered_vector, solved)))

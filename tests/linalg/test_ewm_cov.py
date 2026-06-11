@@ -100,16 +100,16 @@ def test_warmup_reduces_output_length(returns: pl.DataFrame) -> None:
 
 
 def test_warmup_bool_raises() -> None:
-    """Passing a bool as warmup raises TypeError."""
+    """Passing a bool as warmup raises a TypeError with an informative message."""
     df = pl.DataFrame({"date": [0, 1], "A": [1.0, 2.0]})
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match="warmup must be an integer"):
         ewm_covariance(df, ["A"], "date", warmup=True)
 
 
 def test_warmup_negative_raises() -> None:
-    """Passing a negative warmup raises ValueError."""
+    """Passing a negative warmup raises NegativeWarmupError with the offending value."""
     df = pl.DataFrame({"date": [0, 1], "A": [1.0, 2.0]})
-    with pytest.raises(NegativeWarmupError):
+    with pytest.raises(NegativeWarmupError, match="-1"):
         ewm_covariance(df, ["A"], "date", warmup=-1)
 
 
