@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import numpy as np
 
+from .types import Matrix
 
-def cov_to_corr(cov: np.ndarray, min_var: float = 1e-14) -> np.ndarray:
+
+def cov_to_corr(cov: Matrix, min_var: float = 1e-14) -> Matrix:
     """Convert a covariance matrix to a correlation matrix.
 
     Off-diagonal entries are symmetrised by averaging the upper and lower

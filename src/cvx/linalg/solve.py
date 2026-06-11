@@ -14,14 +14,15 @@ from .exceptions import (
 from .exceptions import (
     check_and_warn_condition as _check_and_warn_condition,
 )
+from .types import Matrix, Vector
 from .valid import valid
 
 
 def solve(
-    matrix: np.ndarray,
-    rhs: np.ndarray,
+    matrix: Matrix,
+    rhs: Vector | Matrix,
     cond_threshold: float = DEFAULT_COND_THRESHOLD,
-) -> np.ndarray:
+) -> Vector | Matrix:
     """Solve a linear system restricted to the valid submatrix.
 
     Rows and columns with non-finite diagonal entries are excluded from the

@@ -12,6 +12,7 @@ import numpy as np
 
 from .exceptions import NegativeWarmupError as NegativeWarmupError
 from .exceptions import NonIntegerWarmupError
+from .types import Matrix
 
 try:
     import polars as pl
@@ -30,7 +31,7 @@ def ewm_covariance(
     window: int = 30,
     is_halflife: bool = False,
     warmup: int = 0,
-) -> dict[Hashable, np.ndarray]:
+) -> dict[Hashable, Matrix]:
     """Compute the exponentially weighted covariance matrix of returns.
 
     EWM covariance uses the identity

@@ -5,9 +5,10 @@ from __future__ import annotations
 import numpy as np
 
 from .exceptions import NotAMatrixError
+from .types import Matrix
 
 
-def qr(matrix: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+def qr(matrix: Matrix) -> tuple[Matrix, Matrix]:
     """Compute the reduced QR decomposition of a 2-D matrix.
 
     Args:

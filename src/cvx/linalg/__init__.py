@@ -69,6 +69,7 @@ from .rand_cov import rand_cov as rand_cov
 from .solve import solve as solve
 from .svd import svd as svd
 from .types import Matrix as Matrix
+from .types import Vector as Vector
 from .valid import valid as valid
 
 try:

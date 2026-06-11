@@ -6,13 +6,14 @@ import numpy as np
 
 from .exceptions import DEFAULT_COND_THRESHOLD, NonSquareMatrixError
 from .exceptions import check_and_warn_condition as _check_and_warn_condition
+from .types import Matrix
 from .valid import valid
 
 _SENTINEL = float("nan")
 
 
 def det(
-    matrix: np.ndarray,
+    matrix: Matrix,
     cond_threshold: float = DEFAULT_COND_THRESHOLD,
 ) -> float:
     """Return the determinant of a square matrix.

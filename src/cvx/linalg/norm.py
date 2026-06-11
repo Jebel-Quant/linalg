@@ -16,11 +16,12 @@ from .exceptions import (
 from .exceptions import (
     check_and_warn_condition as _check_and_warn_condition,
 )
+from .types import Matrix, Vector
 from .valid import valid
 
 
 def norm(
-    x: np.ndarray,
+    x: Vector | Matrix,
     ord: int | float | Literal["fro", "nuc"] | None = None,
 ) -> float:
     """Compute the norm of a vector or matrix, ignoring non-finite entries.
@@ -49,7 +50,7 @@ def norm(
     return float(np.linalg.norm(np.where(np.isfinite(x), x, 0.0), ord=ord))
 
 
-def a_norm(vector: np.ndarray, matrix: np.ndarray | None = None) -> float:
+def a_norm(vector: Vector, matrix: Matrix | None = None) -> float:
     """Calculate the generalized norm of a vector with respect to a matrix.
 
     Args:
@@ -88,8 +89,8 @@ def a_norm(vector: np.ndarray, matrix: np.ndarray | None = None) -> float:
 
 
 def inv_a_norm(
-    vector: np.ndarray,
-    matrix: np.ndarray | None = None,
+    vector: Vector,
+    matrix: Matrix | None = None,
     cond_threshold: float = DEFAULT_COND_THRESHOLD,
 ) -> float:
     """Calculate the inverse A-norm of a vector using an optional matrix.
