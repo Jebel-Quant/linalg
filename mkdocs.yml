@@ -11,6 +11,7 @@ copyright: Copyright &copy; 2025–2026 Jebel Quant Research
 nav:
   - Home: index.md
   - API Reference: api.md
+  - Numerical Behavior: numerical-behavior.md
   - Notebooks:
     - End to End: notebooks/end_to_end.html
     - Norms and Validity: notebooks/norms_and_validity.html
@@ -21,6 +22,7 @@ nav:
     - Hypothesis Report: reports/hypothesis/report.html
   - Development:
     - Tests: development/TESTS.md
+    - Mutation Testing: development/MUTATION.md
 
 extra:
   social:

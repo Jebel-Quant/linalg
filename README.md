@@ -70,4 +70,23 @@ All exceptions and warnings live in [`exceptions.py`](https://github.com/Jebel-Q
 
 ## Types
 
-- **[`Matrix`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/types.py)** — Type alias for `numpy.ndarray` with `float64` dtype
+- **[`Matrix`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/types.py)** — Type alias for a 2-D `numpy.ndarray` with `float64` dtype
+- **[`Vector`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/types.py)** — Type alias for a 1-D `numpy.ndarray` with `float64` dtype
+
+The package ships a `py.typed` marker; all public signatures are precisely annotated and verified with [ty](https://github.com/astral-sh/ty) in CI.
+
+## Stability policy
+
+This package follows [semantic versioning](https://semver.org). The public API
+is everything importable from `cvx.linalg` (plus `cvx.linalg.ewm_cov`):
+
+- **Breaking changes** only occur in major releases.
+- **Deprecations** are announced at least one minor release before removal and
+  emit a `DeprecationWarning` in the meantime (currently: the two-argument
+  `cholesky(cov, rhs)` form — use `cholesky_solve` — slated for removal in 1.0).
+- **Supported environments:** Python 3.11–3.14, NumPy ≥ 2.0. The optional
+  `ewm` extra requires Polars ≥ 1.40.
+
+Numerical conventions (NaN handling, condition-number warnings, dtype
+contract) are documented in
+[Numerical Behavior](https://jebel-quant.github.io/linalg/numerical-behavior/).
