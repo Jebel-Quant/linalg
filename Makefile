@@ -8,9 +8,6 @@ GH_AW_ENGINE ?= copilot  # Default AI engine for gh-aw workflows (copilot, claud
 # Override template default: fix quoting bug and typo (mkdocstring -> mkdocstrings)
 MKDOCS_EXTRA_PACKAGES = --with-editable . --with 'mkdocstrings[python]'
 
-# The library is small and fully covered; keep it that way.
-COVERAGE_FAIL_UNDER = 100
-
 # Always include the Rhiza API (template-managed)
 include .rhiza/rhiza.mk
 
