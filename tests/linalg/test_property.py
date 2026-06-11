@@ -36,6 +36,13 @@ from cvx.linalg import inv_a_norm, solve, valid
 _SIZES = st.integers(min_value=1, max_value=8)
 _FINITE_FLOAT = st.floats(min_value=-1e4, max_value=1e4, allow_nan=False, allow_infinity=False)
 _MAYBE_NAN_FLOAT = st.floats(allow_nan=True, allow_infinity=False)
+# Magnitudes are capped so that squaring (norm computes sqrt(v·v)) stays below
+# the float64 max; unbounded values overflow in `dot` and OpenBLAS surfaces
+# that as a RuntimeWarning, which strict filterwarnings promotes to an error.
+_BOUNDED_OR_NAN_FLOAT = st.one_of(
+    st.just(float("nan")),
+    st.floats(min_value=-1e150, max_value=1e150, allow_nan=False, allow_infinity=False),
+)
 
 
 def _square_matrix(n: int) -> st.SearchStrategy[np.ndarray]:
@@ -92,7 +99,7 @@ def test_valid_submatrix_shape_matches_true_count(n: int, data: st.DataObject) -
     vector=np_st.arrays(
         dtype=np.float64,
         shape=st.integers(min_value=1, max_value=20),
-        elements=st.floats(allow_nan=True, allow_infinity=False),
+        elements=_BOUNDED_OR_NAN_FLOAT,
     )
 )
 @settings(max_examples=300)
