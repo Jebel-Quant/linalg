@@ -63,6 +63,9 @@ lint = [
     "ruff>=0.4.0",
 ]
 
+[tool.coverage.run]
+branch = true
+
 [tool.interrogate]
 fail-under = 100
 ignore-init-method = false
