@@ -45,6 +45,7 @@ def test_pca_delegates_to_svd(monkeypatch) -> None:
     called: dict[str, np.ndarray] = {}
 
     def fake_svd(matrix: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Record the input matrix and delegate to numpy's SVD."""
         called["matrix"] = matrix.copy()
         return np.linalg.svd(matrix, full_matrices=False)
 
