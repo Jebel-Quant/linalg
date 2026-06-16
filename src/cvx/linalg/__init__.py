@@ -28,10 +28,12 @@ Functions:
     lstsq: Solve least-squares problems with NaN-aware row filtering
     norm: Compute the norm of a vector or matrix, ignoring non-finite entries
     pca: Compute principal components of return data
+    power_iteration: Estimate the dominant eigenpair of a symmetric matrix
     qr: Compute reduced QR decomposition of a matrix
     rand_cov: Generate a random positive semi-definite covariance matrix
     solve: Solve linear systems with NaN-aware matrix filtering
     svd: Compute compact singular value decomposition
+    svd_k: Compute the truncated rank-k singular value decomposition
     valid: Extract valid submatrix from a matrix with NaN values
 
 """
@@ -64,10 +66,12 @@ from .norm import a_norm as a_norm
 from .norm import inv_a_norm as inv_a_norm
 from .norm import norm as norm
 from .pca import pca as pca
+from .power_iteration import power_iteration as power_iteration
 from .qr import qr as qr
 from .rand_cov import rand_cov as rand_cov
 from .solve import solve as solve
 from .svd import svd as svd
+from .svd import svd_k as svd_k
 from .types import Matrix as Matrix
 from .types import Vector as Vector
 from .valid import valid as valid
