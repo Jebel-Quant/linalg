@@ -76,7 +76,7 @@ def power_iteration(
         raise NonSquareMatrixError(rows, cols)
 
     rng = np.random.default_rng(seed)
-    v = rng.standard_normal(cols)
+    v = rng.standard_normal((cols,))
     v = v / np.linalg.norm(v)
 
     eigenvalue = float(v @ (matrix @ v))
