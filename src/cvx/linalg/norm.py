@@ -22,7 +22,7 @@ from .valid import valid
 
 def norm(
     x: Vector | Matrix,
-    ord: int | float | Literal["fro", "nuc"] | None = None,
+    ord: int | float | Literal["fro", "nuc"] | None = None,  # noqa: A002  # mirrors np.linalg.norm public API
 ) -> float:
     """Compute the norm of a vector or matrix, ignoring non-finite entries.
 
