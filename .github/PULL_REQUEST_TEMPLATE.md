@@ -19,3 +19,4 @@ Closes #
 - [ ] I have run `make test` and all tests pass
 - [ ] I have added or updated tests that cover my changes
 - [ ] My commit messages follow the [Conventional Commits](https://www.conventionalcommits.org/) format
+- [ ] `CHANGELOG.md` entry added (or not needed for this change)

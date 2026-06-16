@@ -84,4 +84,9 @@ def lstsq(
 
     _warn_ill_conditioned(cond, cond_threshold)
 
-    return x, residuals, rank, sv
+    return (
+        x.astype(np.float64, copy=False),
+        residuals.astype(np.float64, copy=False),
+        int(rank),
+        sv.astype(np.float64, copy=False),
+    )
