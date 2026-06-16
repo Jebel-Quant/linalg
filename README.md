@@ -48,10 +48,12 @@ from cvx.linalg.ewm_cov import ewm_covariance  # requires the 'ewm' extra (polar
 - **[`lstsq(matrix, rhs, cond_threshold=1e12)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/lstsq.py)** — Solve a least-squares system with NaN-aware row filtering; returns `(x, residuals, rank, sv)` consistent with `numpy.linalg.lstsq`
 - **[`is_positive_definite(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/cholesky.py)** — Return True if the matrix is symmetric positive-definite
 - **[`pca(returns, n_components)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/pca.py)** — Principal Component Analysis via SVD
+- **[`power_iteration(matrix, n_iter=1000, tol=1e-9, seed=None)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/power_iteration.py)** — Estimate the dominant (largest-magnitude) eigenpair of a symmetric matrix via power iteration
 - **[`qr(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/qr.py)** — Reduced QR decomposition, matching `np.linalg.qr(mode='reduced')`
 - **[`rand_cov(n, seed)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/rand_cov.py)** — Random positive semi-definite covariance matrix
 - **[`solve(matrix, rhs, cond_threshold=1e12)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/solve.py)** — Solve a linear system (vector or matrix rhs) restricted to valid rows/columns; NaN entries are returned for invalid positions
 - **[`svd(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/svd.py)** — Raw compact singular value decomposition via `np.linalg.svd(full_matrices=False)`
+- **[`svd_k(matrix, k)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/svd.py)** — Exact truncated rank-`k` SVD (the best rank-`k` approximation; leading triplets of the compact SVD)
 - **[`valid(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/valid.py)** — Return a boolean mask and valid submatrix by removing rows/columns with non-finite diagonal entries
 
 ## Exceptions & Warnings
