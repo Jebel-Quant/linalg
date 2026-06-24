@@ -14,6 +14,10 @@ pip3 install --upgrade "pip==24.3.1"
 # cvx.linalg at runtime inside the ClusterFuzzLite runner.
 pip3 install .
 
+# PyInstaller does not discover the C-extension submodules of numpy/pandas on
+# its own, so the frozen fuzzer crashes at runtime with
+# "No module named 'numpy._core._exceptions'". --collect-all pulls in every
+# submodule, data file and shared library for these native packages.
 for fuzzer in tests/fuzz/fuzz_*.py; do
-  compile_python_fuzzer "$fuzzer"
+  compile_python_fuzzer "$fuzzer" --collect-all numpy --collect-all pandas
 done
