@@ -15,6 +15,7 @@ Example:
 
 Functions:
     a_norm: Compute the matrix norm of a vector
+    check_and_warn_condition: Compute the condition number and warn if ill-conditioned
     cholesky: Compute upper triangular Cholesky decomposition
     cholesky_solve: Solve a linear system via Cholesky with LU fallback
     cond: Return the condition number of a matrix (NaN-aware)
@@ -25,6 +26,7 @@ Functions:
     eigvalsh: Compute eigenvalues of a symmetric/Hermitian matrix
     inv: Invert a matrix with NaN-aware matrix filtering and condition-number guarding
     inv_a_norm: Compute the inverse matrix norm of a vector
+    is_positive_definite: Test whether a matrix is positive definite
     lstsq: Solve least-squares problems with NaN-aware row filtering
     norm: Compute the norm of a vector or matrix, ignoring non-finite entries
     pca: Compute principal components of return data
@@ -35,6 +37,26 @@ Functions:
     svd: Compute compact singular value decomposition
     svd_k: Compute the truncated rank-k singular value decomposition
     valid: Extract valid submatrix from a matrix with NaN values
+    warn_ill_conditioned: Emit an IllConditionedMatrixWarning for a condition number
+
+Types:
+    Matrix: Type alias for a 2-D NumPy array
+    Vector: Type alias for a 1-D NumPy array
+
+Exceptions:
+    DimensionMismatchError: Raised when operand dimensions are incompatible
+    InvalidComponentsError: Raised when the requested number of components is invalid
+    NegativeWarmupError: Raised when an EWM warmup period is negative
+    NonIntegerWarmupError: Raised when an EWM warmup period is not an integer
+    NonSquareMatrixError: Raised when a square matrix is required but not given
+    NotAMatrixError: Raised when an input is not a 2-D matrix
+    SingularMatrixError: Raised when a matrix is singular and cannot be inverted/solved
+
+Warnings:
+    IllConditionedMatrixWarning: Emitted when a matrix is ill-conditioned
+
+Constants:
+    DEFAULT_COND_THRESHOLD: Default condition-number threshold for ill-conditioning checks
 
 """
 
