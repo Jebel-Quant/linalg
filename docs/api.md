@@ -35,7 +35,11 @@ from cvx.linalg.ewm_cov import ewm_covariance  # requires the 'ewm' extra (polar
 
 ::: cvx.linalg.svd.svd
 
+::: cvx.linalg.svd.svd_k
+
 ::: cvx.linalg.pca.pca
+
+::: cvx.linalg.power_iteration.power_iteration
 
 ---
 
@@ -69,6 +73,8 @@ from cvx.linalg.ewm_cov import ewm_covariance  # requires the 'ewm' extra (polar
 
 ::: cvx.linalg.rand_cov.rand_cov
 
+::: cvx.linalg.cov_to_corr.cov_to_corr
+
 ---
 
 ## Validation
@@ -94,3 +100,17 @@ from cvx.linalg.ewm_cov import ewm_covariance  # requires the 'ewm' extra (polar
 ::: cvx.linalg.exceptions.NonIntegerWarmupError
 
 ::: cvx.linalg.exceptions.InvalidComponentsError
+
+::: cvx.linalg.exceptions.check_and_warn_condition
+
+::: cvx.linalg.exceptions.warn_ill_conditioned
+
+::: cvx.linalg.exceptions.DEFAULT_COND_THRESHOLD
+
+---
+
+## Types
+
+::: cvx.linalg.types.Matrix
+
+::: cvx.linalg.types.Vector
