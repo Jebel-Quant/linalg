@@ -1,6 +1,6 @@
 [project]
 name = "cvx-linalg"
-version = "0.9.3"
+version = "0.9.4"
 description = "Linear algebra utilities for portfolio optimization"
 readme = "README.md"
 requires-python = ">=3.11"

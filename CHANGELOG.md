@@ -5,10 +5,21 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com),
 and entries are generated from [Conventional Commits](https://www.conventionalcommits.org).
 
+## [0.9.4] - 2026-07-02
+
+### New Features
+- Operator-aware power_iteration + SumOperator composite (#86)
+
+### Maintenance
+- *(operators)* Split module and cover degenerate paths (#85)
+
 ## [0.9.3] - 2026-07-02
 
 ### New Features
 - Add k attribute (number of factors) to FactorOperator (#82)
+
+### Other Changes
+- Bump version 0.9.2 → 0.9.3
 
 ## [0.9.2] - 2026-07-02
 
