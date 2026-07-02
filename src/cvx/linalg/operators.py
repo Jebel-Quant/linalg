@@ -235,6 +235,8 @@ class GramOperator(SymmetricOperator):
         root = np.asarray(root, dtype=np.float64)
         if not 0.0 <= alpha <= 1.0:
             raise ValueError(_ALPHA_RANGE_MESSAGE)
+        if factor.ndim != 2:
+            raise NotAMatrixError(factor.ndim, func="GramOperator.regularized")
         if root.ndim != 2:
             raise NotAMatrixError(root.ndim, func="GramOperator.regularized")
         if root.shape[1] != factor.shape[1]:
