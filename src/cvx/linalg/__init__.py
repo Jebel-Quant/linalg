@@ -68,28 +68,34 @@ Constants:
 
 from importlib.metadata import PackageNotFoundError, version
 
-from .cholesky import cholesky as cholesky
-from .cholesky import cholesky_solve as cholesky_solve
-from .cholesky import is_positive_definite as is_positive_definite
-from .cov_to_corr import cov_to_corr as cov_to_corr
-from .det import det as det
-from .eigh import eigh as eigh
-from .eigh import eigvalsh as eigvalsh
-from .eigvals import eigvals as eigvals
-from .exceptions import DEFAULT_COND_THRESHOLD as DEFAULT_COND_THRESHOLD
-from .exceptions import DimensionMismatchError as DimensionMismatchError
-from .exceptions import IllConditionedMatrixWarning as IllConditionedMatrixWarning
-from .exceptions import InvalidComponentsError as InvalidComponentsError
-from .exceptions import NegativeWarmupError as NegativeWarmupError
-from .exceptions import NonIntegerWarmupError as NonIntegerWarmupError
-from .exceptions import NonSquareMatrixError as NonSquareMatrixError
-from .exceptions import NotAMatrixError as NotAMatrixError
-from .exceptions import SingularMatrixError as SingularMatrixError
-from .exceptions import check_and_warn_condition as check_and_warn_condition
-from .exceptions import cond as cond
-from .exceptions import warn_ill_conditioned as warn_ill_conditioned
-from .inv import inv as inv
-from .lstsq import lstsq as lstsq
+from .core import DEFAULT_COND_THRESHOLD as DEFAULT_COND_THRESHOLD
+from .core import DimensionMismatchError as DimensionMismatchError
+from .core import IllConditionedMatrixWarning as IllConditionedMatrixWarning
+from .core import InvalidComponentsError as InvalidComponentsError
+from .core import Matrix as Matrix
+from .core import NegativeWarmupError as NegativeWarmupError
+from .core import NonIntegerWarmupError as NonIntegerWarmupError
+from .core import NonSquareMatrixError as NonSquareMatrixError
+from .core import NotAMatrixError as NotAMatrixError
+from .core import SingularMatrixError as SingularMatrixError
+from .core import Vector as Vector
+from .core import check_and_warn_condition as check_and_warn_condition
+from .core import cond as cond
+from .core import valid as valid
+from .core import warn_ill_conditioned as warn_ill_conditioned
+from .covariance import cov_to_corr as cov_to_corr
+from .covariance import pca as pca
+from .covariance import rand_cov as rand_cov
+from .decomposition import cholesky as cholesky
+from .decomposition import cholesky_solve as cholesky_solve
+from .decomposition import eigh as eigh
+from .decomposition import eigvals as eigvals
+from .decomposition import eigvalsh as eigvalsh
+from .decomposition import is_positive_definite as is_positive_definite
+from .decomposition import power_iteration as power_iteration
+from .decomposition import qr as qr
+from .decomposition import svd as svd
+from .decomposition import svd_k as svd_k
 from .norm import a_norm as a_norm
 from .norm import inv_a_norm as inv_a_norm
 from .norm import norm as norm
@@ -97,16 +103,10 @@ from .operators import DenseOperator as DenseOperator
 from .operators import FactorOperator as FactorOperator
 from .operators import GramOperator as GramOperator
 from .operators import SymmetricOperator as SymmetricOperator
-from .pca import pca as pca
-from .power_iteration import power_iteration as power_iteration
-from .qr import qr as qr
-from .rand_cov import rand_cov as rand_cov
+from .solve import det as det
+from .solve import inv as inv
+from .solve import lstsq as lstsq
 from .solve import solve as solve
-from .svd import svd as svd
-from .svd import svd_k as svd_k
-from .types import Matrix as Matrix
-from .types import Vector as Vector
-from .valid import valid as valid
 
 __all__ = [
     "DEFAULT_COND_THRESHOLD",

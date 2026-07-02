@@ -36,7 +36,7 @@ with atheris.instrument_imports():
         solve,
         valid,
     )
-    from cvx.linalg.exceptions import (
+    from cvx.linalg.core.exceptions import (
         DimensionMismatchError,
         InvalidComponentsError,
         NonSquareMatrixError,

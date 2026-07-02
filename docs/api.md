@@ -12,105 +12,105 @@ from cvx.linalg import cholesky, cholesky_solve, eigh, eigvalsh, eigvals, qr, sv
 from cvx.linalg import solve, lstsq, inv
 from cvx.linalg import norm, a_norm, inv_a_norm, cond, det
 from cvx.linalg import rand_cov, valid, is_positive_definite
-from cvx.linalg.ewm_cov import ewm_covariance  # requires the 'ewm' extra (polars)
+from cvx.linalg.covariance.ewm_cov import ewm_covariance  # requires the 'ewm' extra (polars)
 ```
 
 ---
 
 ## Decompositions
 
-::: cvx.linalg.cholesky.cholesky
+::: cvx.linalg.decomposition.cholesky.cholesky
 
-::: cvx.linalg.cholesky.cholesky_solve
+::: cvx.linalg.decomposition.cholesky.cholesky_solve
 
-::: cvx.linalg.cholesky.is_positive_definite
+::: cvx.linalg.decomposition.cholesky.is_positive_definite
 
-::: cvx.linalg.eigh.eigh
+::: cvx.linalg.decomposition.eigh.eigh
 
-::: cvx.linalg.eigh.eigvalsh
+::: cvx.linalg.decomposition.eigh.eigvalsh
 
-::: cvx.linalg.eigvals.eigvals
+::: cvx.linalg.decomposition.eigvals.eigvals
 
-::: cvx.linalg.qr.qr
+::: cvx.linalg.decomposition.qr.qr
 
-::: cvx.linalg.svd.svd
+::: cvx.linalg.decomposition.svd.svd
 
-::: cvx.linalg.svd.svd_k
+::: cvx.linalg.decomposition.svd.svd_k
 
-::: cvx.linalg.pca.pca
+::: cvx.linalg.covariance.pca.pca
 
-::: cvx.linalg.power_iteration.power_iteration
+::: cvx.linalg.decomposition.power_iteration.power_iteration
 
 ---
 
 ## Solvers
 
-::: cvx.linalg.solve.solve
+::: cvx.linalg.solve.solve.solve
 
-::: cvx.linalg.lstsq.lstsq
+::: cvx.linalg.solve.lstsq.lstsq
 
-::: cvx.linalg.inv.inv
+::: cvx.linalg.solve.inv.inv
 
 ---
 
 ## Norms & Metrics
 
-::: cvx.linalg.norm.norm
+::: cvx.linalg.norm.norm.norm
 
-::: cvx.linalg.norm.a_norm
+::: cvx.linalg.norm.norm.a_norm
 
-::: cvx.linalg.norm.inv_a_norm
+::: cvx.linalg.norm.norm.inv_a_norm
 
-::: cvx.linalg.exceptions.cond
+::: cvx.linalg.core.exceptions.cond
 
-::: cvx.linalg.det.det
+::: cvx.linalg.solve.det.det
 
 ---
 
 ## Covariance
 
-::: cvx.linalg.ewm_cov.ewm_covariance
+::: cvx.linalg.covariance.ewm_cov.ewm_covariance
 
-::: cvx.linalg.rand_cov.rand_cov
+::: cvx.linalg.covariance.rand_cov.rand_cov
 
-::: cvx.linalg.cov_to_corr.cov_to_corr
+::: cvx.linalg.covariance.cov_to_corr.cov_to_corr
 
 ---
 
 ## Validation
 
-::: cvx.linalg.valid.valid
+::: cvx.linalg.core.valid.valid
 
 ---
 
 ## Exceptions & Warnings
 
-::: cvx.linalg.exceptions.SingularMatrixError
+::: cvx.linalg.core.exceptions.SingularMatrixError
 
-::: cvx.linalg.exceptions.IllConditionedMatrixWarning
+::: cvx.linalg.core.exceptions.IllConditionedMatrixWarning
 
-::: cvx.linalg.exceptions.DimensionMismatchError
+::: cvx.linalg.core.exceptions.DimensionMismatchError
 
-::: cvx.linalg.exceptions.NonSquareMatrixError
+::: cvx.linalg.core.exceptions.NonSquareMatrixError
 
-::: cvx.linalg.exceptions.NotAMatrixError
+::: cvx.linalg.core.exceptions.NotAMatrixError
 
-::: cvx.linalg.exceptions.NegativeWarmupError
+::: cvx.linalg.core.exceptions.NegativeWarmupError
 
-::: cvx.linalg.exceptions.NonIntegerWarmupError
+::: cvx.linalg.core.exceptions.NonIntegerWarmupError
 
-::: cvx.linalg.exceptions.InvalidComponentsError
+::: cvx.linalg.core.exceptions.InvalidComponentsError
 
-::: cvx.linalg.exceptions.check_and_warn_condition
+::: cvx.linalg.core.exceptions.check_and_warn_condition
 
-::: cvx.linalg.exceptions.warn_ill_conditioned
+::: cvx.linalg.core.exceptions.warn_ill_conditioned
 
-::: cvx.linalg.exceptions.DEFAULT_COND_THRESHOLD
+::: cvx.linalg.core.exceptions.DEFAULT_COND_THRESHOLD
 
 ---
 
 ## Types
 
-::: cvx.linalg.types.Matrix
+::: cvx.linalg.core.types.Matrix
 
-::: cvx.linalg.types.Vector
+::: cvx.linalg.core.types.Vector

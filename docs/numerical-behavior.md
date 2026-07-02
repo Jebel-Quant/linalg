@@ -10,7 +10,7 @@ they live in one place rather than being repeated in every docstring.
 ## NaN-awareness
 
 Most functions are *NaN-aware*: before computing, they reduce the input to its
-**valid submatrix** via [`valid`][cvx.linalg.valid.valid]. A row/column is
+**valid submatrix** via [`valid`][cvx.linalg.core.valid.valid]. A row/column is
 valid when its **diagonal entry is finite**; rows and columns with NaN or
 infinity on the diagonal are dropped, the computation runs on the remaining
 square submatrix, and (where applicable) results are re-expanded with NaN at
@@ -31,7 +31,7 @@ the invalid positions.
 Functions that solve or invert (`solve`, `inv`, `det`, `lstsq`) accept a
 `cond_threshold` parameter, defaulting to `DEFAULT_COND_THRESHOLD = 1e12`.
 When the condition number of the (valid) matrix exceeds the threshold, an
-[`IllConditionedMatrixWarning`][cvx.linalg.exceptions.IllConditionedMatrixWarning]
+[`IllConditionedMatrixWarning`][cvx.linalg.core.exceptions.IllConditionedMatrixWarning]
 is emitted and the computation proceeds — the warning signals that results may
 be numerically unreliable, it does not abort.
 
@@ -41,8 +41,8 @@ is a test failure; expected warnings are asserted explicitly with
 
 ## dtype contract
 
-The public API is annotated with the [`Matrix`][cvx.linalg.types] and
-[`Vector`][cvx.linalg.types] aliases — both `numpy.typing.NDArray[np.float64]`
+The public API is annotated with the [`Matrix`][cvx.linalg.core.types] and
+[`Vector`][cvx.linalg.core.types] aliases — both `numpy.typing.NDArray[np.float64]`
 (2-D and 1-D respectively). `eigvals` may return complex eigenvalues for
 non-symmetric input. The package ships a `py.typed` marker, so these
 annotations are checked in downstream code.

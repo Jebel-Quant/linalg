@@ -29,7 +29,7 @@ from cvx.linalg import (
     a_norm, cholesky, cholesky_solve,
     inv, inv_a_norm, is_positive_definite, lstsq, pca, rand_cov, solve, valid,
 )
-from cvx.linalg.ewm_cov import ewm_covariance  # requires the 'ewm' extra (polars)
+from cvx.linalg.covariance.ewm_cov import ewm_covariance  # requires the 'ewm' extra (polars)
 ```
 
 ## Functions
@@ -80,7 +80,7 @@ The package ships a `py.typed` marker; all public signatures are precisely annot
 ## Stability policy
 
 This package follows [semantic versioning](https://semver.org). The public API
-is everything importable from `cvx.linalg` (plus `cvx.linalg.ewm_cov`):
+is everything importable from `cvx.linalg` (plus `cvx.linalg.covariance.ewm_cov`):
 
 - **Breaking changes** only occur in major releases.
 - **Deprecations** are announced at least one minor release before removal and
