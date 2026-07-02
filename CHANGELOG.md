@@ -5,6 +5,32 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com),
 and entries are generated from [Conventional Commits](https://www.conventionalcommits.org).
 
+## [0.9.0] - 2026-07-02
+
+### New Features
+- Add ClusterFuzzLite fuzzing scaffold for cvx-linalg (#61)
+- SymmetricOperator abstraction and backends (#76)
+- Add ridge (Tikhonov) support to GramOperator (#78)
+
+### Documentation
+- *(api)* Document the 8 missing public exports in API reference (#69)
+- *(api)* Declare explicit __all__ for the public API (#70) (#72)
+- Complete the package-level export overview in __init__ (#71) (#73)
+
+### Maintenance
+- Chore(deps-dev)(deps-dev): bump the python-dependencies group with 4 updates (#60)
+- Chore(deps)(deps): bump the github-actions group with 3 updates (#64)
+- Chore(deps-dev)(deps-dev): bump the python-dependencies group with 3 updates (#63)
+- Update rhiza to v1.0.0 (#74)
+- Chore(deps-dev)(deps-dev): bump polars in the python-dependencies group (#75)
+- Update rhiza to v1.0.1 (#77)
+- Group linalg modules into subpackages (#79)
+
+### Other Changes
+- Sync Rhiza template v0.19.3 → v0.19.4 (#59)
+- Sync Rhiza template v0.19.4 → v0.19.6 (#62)
+- Sync Rhiza template v0.19.6 → v0.19.9 (#67)
+
 ## [0.8.0] - 2026-06-16
 
 ### New Features
@@ -18,6 +44,7 @@ and entries are generated from [Conventional Commits](https://www.conventionalco
 ### Other Changes
 - Quality hardening: typing, coverage gates, property tests, mutation baseline (#52)
 - Sync Rhiza template v0.18.8 → v0.19.3 (#57)
+- Bump version 0.7.0 → 0.8.0
 
 ## [0.7.0] - 2026-06-11
 
