@@ -382,6 +382,8 @@ class FactorOperator(SymmetricOperator):
         >>> U = np.array([[1.0], [0.5], [-1.0]])
         >>> Delta = np.array([[2.0]])
         >>> op = FactorOperator(d, U, Delta)
+        >>> (op.n, op.k)                          # 3 assets, 1 factor
+        (3, 1)
         >>> A = np.diag(d) + U @ Delta @ U.T
         >>> free, rhs = np.array([0, 2]), np.array([1.0, 1.0])
         >>> np.allclose(A[np.ix_(free, free)] @ op.solve_free(free, rhs), rhs)
