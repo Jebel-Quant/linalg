@@ -55,7 +55,9 @@ from .types import Matrix, Vector
 
 _ALPHA_RANGE_MESSAGE = "alpha must lie in the interval [0, 1]"
 _INDEX_NDIM_MESSAGE = "index set must be a 1-D array of integer positions"
+_INDEX_DUPLICATE_MESSAGE = "index set must not contain duplicates"
 _DIAGONAL_NDIM_MESSAGE = "diagonal must be a 1-D array"
+_DIAGONAL_POSITIVE_MESSAGE = "diagonal entries must be strictly positive"
 
 __all__ = [
     "DenseOperator",
@@ -74,7 +76,7 @@ def _as_index(indices: object) -> np.ndarray:
         raise ValueError(_INDEX_NDIM_MESSAGE)
     idx = arr.astype(np.intp, copy=False)
     if np.unique(idx).size != idx.size:
-        raise ValueError("index set must not contain duplicates")
+        raise ValueError(_INDEX_DUPLICATE_MESSAGE)
     return idx
 
 
@@ -306,7 +308,7 @@ class FactorOperator(SymmetricOperator):
         if d.ndim != 1:
             raise ValueError(_DIAGONAL_NDIM_MESSAGE)
         if np.any(d <= 0.0):
-            raise ValueError("diagonal entries must be strictly positive")
+            raise ValueError(_DIAGONAL_POSITIVE_MESSAGE)
         if u.ndim != 2:
             raise NotAMatrixError(u.ndim, func="FactorOperator")
         if u.shape[0] != d.shape[0]:
