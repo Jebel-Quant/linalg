@@ -411,3 +411,48 @@ def test_incremental_empty_free_set() -> None:
     inc = IncrementalDenseOperator(np.eye(4))
     out = inc.solve_free(np.array([], dtype=int), np.array([]))
     assert out.shape == (0,)
+
+
+# --- degenerate / non-positive-definite paths ---------------------------------
+
+
+def test_dense_rcond_free_non_positive_block_is_zero() -> None:
+    """A free block with a non-positive top eigenvalue is reported as singular (rcond 0)."""
+    # A negative-definite block: lambda_max <= 0, so rcond_free short-circuits to 0.0.
+    op = DenseOperator(-np.eye(3))
+    assert op.rcond_free(np.array([0, 1])) == 0.0
+
+
+def test_gram_rcond_free_zero_factor_is_zero() -> None:
+    """An all-zero factor block has lambda_max = 0, so the un-ridged rcond is 0."""
+    op = GramOperator(np.zeros((3, 4)))
+    assert op.rcond_free(np.array([0, 1, 2, 3])) == 0.0
+
+
+def test_incremental_insert_bad_pivot_falls_back() -> None:
+    """A single-index insert with a non-positive Schur pivot recomputes and stays exact."""
+    # diag([1, -1, 2]) is symmetric but indefinite: every principal block is invertible,
+    # yet inserting index 1 into free {0} yields a Schur complement of -1 (<= 0), which
+    # forces the bordered update to bail out to a fresh refactorisation.
+    a = np.diag([1.0, -1.0, 2.0])
+    inc = IncrementalDenseOperator(a)
+    ref = DenseOperator(a)
+    rng = np.random.default_rng(27)
+    inc.solve_free(np.array([0]), rng.standard_normal(1))  # seed the cache with free {0}
+    free = np.array([0, 1])  # insert 1 -> Schur = -1 -> bad pivot -> refactor
+    rhs = rng.standard_normal(2)
+    assert np.allclose(inc.solve_free(free, rhs), ref.solve_free(free, rhs))
+
+
+def test_incremental_delete_bad_pivot_falls_back() -> None:
+    """A single-index delete with a non-positive inverse pivot recomputes and stays exact."""
+    # From free {0, 1} the maintained inverse is diag([1, -1]); removing index 1 reads a
+    # pivot of -1 (<= 0), so the deletion update bails out to a fresh refactorisation.
+    a = np.diag([1.0, -1.0, 2.0])
+    inc = IncrementalDenseOperator(a)
+    ref = DenseOperator(a)
+    rng = np.random.default_rng(28)
+    inc.solve_free(np.array([0, 1]), rng.standard_normal(2))  # cache inverse of diag([1, -1])
+    free = np.array([0])  # delete 1 -> pivot -1 -> bad pivot -> refactor
+    rhs = rng.standard_normal(1)
+    assert np.allclose(inc.solve_free(free, rhs), ref.solve_free(free, rhs))
