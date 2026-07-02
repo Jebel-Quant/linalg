@@ -44,6 +44,7 @@ Operators:
     DenseOperator: SymmetricOperator backed by an explicit dense matrix
     GramOperator: SymmetricOperator A = M.T @ M represented by its factor M (matrix-free)
     FactorOperator: Diagonal-plus-low-rank SymmetricOperator with Woodbury free-block solves
+    IncrementalDenseOperator: DenseOperator maintaining the free-block inverse across single-index flips
 
 Types:
     Matrix: Type alias for a 2-D NumPy array
@@ -102,6 +103,7 @@ from .norm import norm as norm
 from .operators import DenseOperator as DenseOperator
 from .operators import FactorOperator as FactorOperator
 from .operators import GramOperator as GramOperator
+from .operators import IncrementalDenseOperator as IncrementalDenseOperator
 from .operators import SymmetricOperator as SymmetricOperator
 from .solve import det as det
 from .solve import inv as inv
@@ -115,6 +117,7 @@ __all__ = [
     "FactorOperator",
     "GramOperator",
     "IllConditionedMatrixWarning",
+    "IncrementalDenseOperator",
     "InvalidComponentsError",
     "Matrix",
     "NegativeWarmupError",

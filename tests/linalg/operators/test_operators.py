@@ -10,10 +10,22 @@ from cvx.linalg import (
     DimensionMismatchError,
     FactorOperator,
     GramOperator,
+    IncrementalDenseOperator,
     NonSquareMatrixError,
     NotAMatrixError,
     SymmetricOperator,
 )
+
+
+def _rcond_reference(block: np.ndarray) -> float:
+    """Reference reciprocal 2-norm condition number from the symmetric eigenvalues."""
+    if block.shape[0] == 0:
+        return 1.0
+    eig = np.linalg.eigvalsh(block)
+    lam_max = float(eig[-1])
+    if lam_max <= 0.0:
+        return 0.0
+    return max(float(eig[0]), 0.0) / lam_max
 
 
 def _check_against_dense(op: SymmetricOperator, a: np.ndarray, rng: np.random.Generator) -> None:
@@ -276,3 +288,121 @@ def test_factor_operator_rejects_non_square_inner() -> None:
     """The inner block must be square."""
     with pytest.raises(NonSquareMatrixError):
         FactorOperator(np.ones(3), np.ones((3, 2)), np.ones((2, 3)))
+
+
+# --- rcond_free ---------------------------------------------------------------
+
+
+def test_rcond_free_dense_matches_eigvals() -> None:
+    """DenseOperator.rcond_free equals the block's reciprocal condition number."""
+    rng = np.random.default_rng(20)
+    b = rng.standard_normal((7, 7))
+    a = b @ b.T + np.eye(7)
+    op = DenseOperator(a)
+    free = np.array([0, 2, 5, 6])
+    assert np.isclose(op.rcond_free(free), _rcond_reference(a[np.ix_(free, free)]))
+
+
+def test_rcond_free_gram_matches_eigvals() -> None:
+    """GramOperator.rcond_free equals the reciprocal condition of M_F.T M_F + ridge I."""
+    rng = np.random.default_rng(21)
+    m = rng.standard_normal((25, 8))
+    for ridge in (0.0, 0.4):
+        op = GramOperator(m, ridge=ridge)
+        free = np.array([1, 2, 4, 7])
+        block = m[:, free].T @ m[:, free] + ridge * np.eye(len(free))
+        assert np.isclose(op.rcond_free(free), _rcond_reference(block))
+
+
+def test_rcond_free_gram_rank_deficient_drives_to_zero() -> None:
+    """Without a ridge, an over-large free set is singular (rcond 0); a ridge lifts it."""
+    rng = np.random.default_rng(22)
+    m = rng.standard_normal((3, 10))  # rank <= 3
+    free = np.arange(10)
+    assert GramOperator(m).rcond_free(free) == 0.0
+    assert GramOperator(m, ridge=0.5).rcond_free(free) > 0.0
+
+
+def test_rcond_free_factor_is_lower_bound() -> None:
+    """FactorOperator.rcond_free is a valid lower bound on the true reciprocal condition."""
+    rng = np.random.default_rng(23)
+    n, r = 9, 3
+    d = rng.uniform(1.0, 2.0, size=n)
+    u = rng.standard_normal((n, r))
+    c = rng.standard_normal((r, r))
+    delta = c @ c.T + np.eye(r)
+    a = np.diag(d) + u @ delta @ u.T
+    op = FactorOperator(d, u, delta)
+    free = np.array([0, 3, 4, 8])
+    bound = op.rcond_free(free)
+    true = _rcond_reference(a[np.ix_(free, free)])
+    assert 0.0 < bound <= true + 1e-12
+
+
+def test_rcond_free_empty_is_one() -> None:
+    """An empty free set is treated as perfectly conditioned by every backend."""
+    empty = np.array([], dtype=int)
+    assert DenseOperator(np.eye(3)).rcond_free(empty) == 1.0
+    assert GramOperator(np.ones((4, 3))).rcond_free(empty) == 1.0
+    assert FactorOperator(np.ones(3), np.ones((3, 2)), np.eye(2)).rcond_free(empty) == 1.0
+
+
+# --- IncrementalDenseOperator -------------------------------------------------
+
+
+def test_incremental_matches_dense_on_flip_sequence() -> None:
+    """The maintained inverse tracks fresh solves across single-index insert/delete flips."""
+    rng = np.random.default_rng(24)
+    b = rng.standard_normal((10, 10))
+    a = b @ b.T + 10 * np.eye(10)
+    inc = IncrementalDenseOperator(a)
+    ref = DenseOperator(a)
+    free_sets = [
+        [0, 1, 2, 3],
+        [0, 1, 2, 3, 7],  # insert 7
+        [0, 2, 3, 7],  # delete 1
+        [0, 2, 3, 5, 7],  # insert 5
+        [0, 2, 3, 5, 7, 9],  # insert 9
+        [0, 2, 3, 5, 9],  # delete 7
+    ]
+    for fs in free_sets:
+        free = np.array(fs)
+        rhs = rng.standard_normal(len(fs))
+        assert np.allclose(inc.solve_free(free, rhs), ref.solve_free(free, rhs))
+
+
+def test_incremental_handles_multi_index_change() -> None:
+    """A change of more than one index falls back to a fresh inverse and stays correct."""
+    rng = np.random.default_rng(25)
+    b = rng.standard_normal((8, 8))
+    a = b @ b.T + 8 * np.eye(8)
+    inc = IncrementalDenseOperator(a)
+    ref = DenseOperator(a)
+    for fs in ([0, 1, 2], [3, 4, 5, 6]):  # disjoint jump -> refactor path
+        free = np.array(fs)
+        rhs = rng.standard_normal(len(fs))
+        assert np.allclose(inc.solve_free(free, rhs), ref.solve_free(free, rhs))
+
+
+def test_incremental_matrix_rhs_and_delegated_products() -> None:
+    """Matrix RHS solves, and matvec/block_matvec/rcond_free match the plain dense backend."""
+    rng = np.random.default_rng(26)
+    b = rng.standard_normal((6, 6))
+    a = b @ b.T + 6 * np.eye(6)
+    inc = IncrementalDenseOperator(a)
+    ref = DenseOperator(a)
+    free = np.array([0, 2, 4])
+    rhs_mat = rng.standard_normal((3, 2))
+    assert np.allclose(inc.solve_free(free, rhs_mat), ref.solve_free(free, rhs_mat))
+    x = rng.standard_normal(6)
+    assert np.allclose(inc.matvec(x), ref.matvec(x))
+    v = rng.standard_normal(3)
+    assert np.allclose(inc.block_matvec(np.array([1, 3]), free, v), ref.block_matvec(np.array([1, 3]), free, v))
+    assert np.isclose(inc.rcond_free(free), ref.rcond_free(free))
+
+
+def test_incremental_empty_free_set() -> None:
+    """An empty free set returns an empty solution without error."""
+    inc = IncrementalDenseOperator(np.eye(4))
+    out = inc.solve_free(np.array([], dtype=int), np.array([]))
+    assert out.shape == (0,)
