@@ -67,9 +67,14 @@ __all__ = [
 
 def _as_index(indices: object) -> np.ndarray:
     """Coerce an index set to a 1-D integer array."""
-    idx = np.asarray(indices, dtype=np.intp)
-    if idx.ndim != 1:
+    arr = np.asarray(indices)
+    if arr.ndim != 1:
         raise ValueError(_INDEX_NDIM_MESSAGE)
+    if arr.dtype == np.bool_ or not np.issubdtype(arr.dtype, np.integer):
+        raise ValueError(_INDEX_NDIM_MESSAGE)
+    idx = arr.astype(np.intp, copy=False)
+    if np.unique(idx).size != idx.size:
+        raise ValueError("index set must not contain duplicates")
     return idx
 
 
