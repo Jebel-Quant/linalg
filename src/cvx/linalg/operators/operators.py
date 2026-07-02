@@ -416,6 +416,11 @@ class FactorOperator(SymmetricOperator):
         """Dimension of the operator (length of the diagonal ``d``)."""
         return int(self._d.shape[0])
 
+    @property
+    def k(self) -> int:
+        """Number of factors (rank ``r`` of the low-rank term; columns of ``U``)."""
+        return int(self._u.shape[1])
+
     def matvec(self, x: Vector | Matrix) -> Vector | Matrix:
         """Return ``A @ x = d * x + U @ (Delta @ (U.T @ x))``."""
         return (self._d * x.T).T + self._u @ (self._delta @ (self._u.T @ x))
