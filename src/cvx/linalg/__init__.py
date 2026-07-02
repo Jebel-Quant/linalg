@@ -45,6 +45,7 @@ Operators:
     GramOperator: SymmetricOperator A = M.T @ M represented by its factor M (matrix-free)
     FactorOperator: Diagonal-plus-low-rank SymmetricOperator with Woodbury free-block solves
     IncrementalDenseOperator: DenseOperator maintaining the free-block inverse across single-index flips
+    SumOperator: Weighted sum of symmetric operators (forward-only; feed apply_free to a Krylov solver)
 
 Constrained solves:
     bordered_solve: Range-space (Schur complement) solve of a bordered KKT system over a SymmetricOperator
@@ -110,6 +111,7 @@ from .operators import DenseOperator as DenseOperator
 from .operators import FactorOperator as FactorOperator
 from .operators import GramOperator as GramOperator
 from .operators import IncrementalDenseOperator as IncrementalDenseOperator
+from .operators import SumOperator as SumOperator
 from .operators import SymmetricOperator as SymmetricOperator
 from .solve import det as det
 from .solve import inv as inv
@@ -132,6 +134,7 @@ __all__ = [
     "NonSquareMatrixError",
     "NotAMatrixError",
     "SingularMatrixError",
+    "SumOperator",
     "SymmetricOperator",
     "Vector",
     "a_norm",

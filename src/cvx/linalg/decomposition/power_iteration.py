@@ -2,38 +2,55 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from typing import TYPE_CHECKING
+
 import numpy as np
 
 from ..core.exceptions import NonSquareMatrixError, NotAMatrixError
 from ..core.types import Matrix, Vector
 
+if TYPE_CHECKING:
+    from ..operators import SymmetricOperator
+
+_CALLABLE_NEEDS_N_MESSAGE = "power_iteration needs `n` when `operator` is a bare callable"
+
 
 def power_iteration(
-    matrix: Matrix,
+    operator: Matrix | SymmetricOperator | Callable[[Vector], Vector],
     *,
+    n: int | None = None,
     n_iter: int = 1000,
     tol: float = 1e-9,
     seed: int | None = None,
 ) -> tuple[float, Vector]:
-    """Estimate the dominant eigenpair of a real symmetric matrix.
+    """Estimate the dominant eigenpair of a real symmetric operator.
 
-    Repeatedly applies *matrix* to a random unit vector, renormalizing each
+    Repeatedly applies *operator* to a random unit vector, renormalizing each
     step, until the Rayleigh-quotient eigenvalue estimate stops changing. The
     iterate converges to the eigenvector whose eigenvalue is largest in
     magnitude; the matching eigenvalue (returned with its sign) comes from the
-    Rayleigh quotient ``v.T @ matrix @ v``.
+    Rayleigh quotient ``v.T @ (operator @ v)``.
 
-    Each iteration costs a single matrix-vector product, so this is far cheaper
-    than a full :func:`~cvx.linalg.eigh` when only the leading eigenpair is
-    needed and convergence is fast (i.e. a clear spectral gap). Convergence
-    slows as the ratio of the two largest eigenvalue magnitudes approaches 1.
+    *operator* may be given three ways, so the leading eigenvalue can be
+    estimated **matrix-free** (e.g. the Lipschitz constant of a gradient step):
 
-    The matrix is assumed symmetric; only the result's interpretation as an
-    eigenpair relies on it. Like :func:`~cvx.linalg.svd`, this is a raw
-    primitive and is **not** NaN-aware.
+    * a dense symmetric ``(n, n)`` array;
+    * any :class:`~cvx.linalg.SymmetricOperator` (its :meth:`matvec` and ``n``
+      drive the iteration, so no ``n x n`` matrix is formed); or
+    * a callable ``v -> A @ v`` together with the dimension *n*.
+
+    Each iteration costs a single application, so this is far cheaper than a full
+    :func:`~cvx.linalg.eigh` when only the leading eigenpair is needed and there
+    is a clear spectral gap. Symmetry is assumed; only the result's
+    interpretation as an eigenpair relies on it. Like :func:`~cvx.linalg.svd`,
+    this is a raw primitive and is **not** NaN-aware.
 
     Args:
-        matrix: Square (symmetric) input matrix of shape ``(n, n)``.
+        operator: A symmetric matrix, a :class:`~cvx.linalg.SymmetricOperator`,
+            or a callable applying it to a vector.
+        n: Dimension of the operator. Required when *operator* is a bare callable;
+            ignored otherwise (taken from the array shape or the operator's ``n``).
         n_iter: Maximum number of iterations. Defaults to 1000.
         tol: Convergence tolerance on the relative change of the eigenvalue
             estimate between iterations. Defaults to ``1e-9``.
@@ -46,8 +63,9 @@ def power_iteration(
         corresponding unit-norm eigenvector. The eigenvector sign is arbitrary.
 
     Raises:
-        NotAMatrixError: If *matrix* is not 2-D.
-        NonSquareMatrixError: If *matrix* is not square.
+        NotAMatrixError: If *operator* is an array that is not 2-D.
+        NonSquareMatrixError: If *operator* is an array that is not square.
+        ValueError: If *operator* is a bare callable and *n* is not given.
 
     Example:
         >>> import numpy as np
@@ -59,37 +77,57 @@ def power_iteration(
         >>> bool(np.isclose(abs(eigenvector[0]), 1.0))
         True
 
-        The estimate agrees with the largest-magnitude eigenvalue from a full
-        symmetric eigendecomposition:
+        It runs matrix-free on a :class:`~cvx.linalg.SymmetricOperator`, so the
+        leading eigenvalue of ``M.T @ M`` needs no ``n x n`` matrix:
 
-        >>> from cvx.linalg import rand_cov
-        >>> cov = rand_cov(8, seed=42)
-        >>> eigenvalue, _ = power_iteration(cov, seed=0)
-        >>> dominant = np.linalg.eigvalsh(cov)[-1]
-        >>> bool(np.isclose(eigenvalue, dominant))
+        >>> from cvx.linalg import GramOperator
+        >>> rng = np.random.default_rng(0)
+        >>> M = rng.standard_normal((20, 5))
+        >>> lam, _ = power_iteration(GramOperator(M), seed=0)
+        >>> bool(np.isclose(lam, np.linalg.eigvalsh(M.T @ M)[-1]))
         True
     """
-    if matrix.ndim != 2:
-        raise NotAMatrixError(matrix.ndim, func="power_iteration")
-    rows, cols = matrix.shape
-    if rows != cols:
-        raise NonSquareMatrixError(rows, cols)
+    apply, dim = _resolve(operator, n)
 
     rng = np.random.default_rng(seed)
-    v = rng.standard_normal((cols,))
+    v = rng.standard_normal((dim,))
     v = v / np.linalg.norm(v)
 
-    eigenvalue = float(v @ (matrix @ v))
+    eigenvalue = float(v @ apply(v))
     for _ in range(n_iter):
-        w = matrix @ v
+        w = apply(v)
         norm = float(np.linalg.norm(w))
         if norm < 1e-15:
-            # matrix annihilates the iterate: the dominant eigenvalue is zero.
+            # operator annihilates the iterate: the dominant eigenvalue is zero.
             return 0.0, v
         v = w / norm
-        new_eigenvalue = float(v @ (matrix @ v))
+        new_eigenvalue = float(v @ apply(v))
         if abs(new_eigenvalue - eigenvalue) <= tol * max(1.0, abs(new_eigenvalue)):
             return new_eigenvalue, v
         eigenvalue = new_eigenvalue
 
     return eigenvalue, v
+
+
+def _resolve(
+    operator: Matrix | SymmetricOperator | Callable[[Vector], Vector],
+    n: int | None,
+) -> tuple[Callable[[Vector], Vector], int]:
+    """Return ``(apply, dimension)`` for an array, a SymmetricOperator, or a callable."""
+    # Imported lazily: operators depend on decomposition.cholesky, so a module-level
+    # import would close an import cycle (hence the TYPE_CHECKING-only import above).
+    from ..operators import SymmetricOperator
+
+    if isinstance(operator, SymmetricOperator):
+        return operator.matvec, operator.n
+    if not isinstance(operator, np.ndarray) and callable(operator):
+        if n is None:
+            raise ValueError(_CALLABLE_NEEDS_N_MESSAGE)
+        return operator, int(n)
+    array = np.asarray(operator)
+    if array.ndim != 2:
+        raise NotAMatrixError(array.ndim, func="power_iteration")
+    rows, cols = array.shape
+    if rows != cols:
+        raise NonSquareMatrixError(rows, cols)
+    return lambda v: array @ v, cols
