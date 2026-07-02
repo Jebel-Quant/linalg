@@ -71,7 +71,7 @@ def bordered_solve(
 
     # One multi-RHS solve against H_FF covers the constraint columns C.T and the
     # right-hand side, so H_FF is factorised a single time.
-    solved = cast("Matrix", operator.solve_free(free, np.column_stack([c_free.T, rhs_2d])))
+    solved = operator.solve_free(free, np.column_stack([c_free.T, rhs_2d]))
     y = solved[:, :mc]  # H_FF^{-1} C.T
     z = solved[:, mc:]  # H_FF^{-1} rhs
 

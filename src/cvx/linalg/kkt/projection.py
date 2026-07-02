@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 import numpy as np
 
 from ..core.exceptions import DimensionMismatchError, NotAMatrixError
@@ -73,4 +71,4 @@ class AffineProjection:
         target = self._d if x.ndim == 1 else self._d[:, None]
         residual = self._c @ x - target
         correction = self._c.T @ np.linalg.solve(self._gram, residual)
-        return cast("Vector | Matrix", x - correction)
+        return x - correction
