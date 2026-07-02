@@ -298,6 +298,8 @@ class FactorOperator(SymmetricOperator):
         delta = np.asarray(inner, dtype=np.float64)
         if d.ndim != 1:
             raise ValueError(_DIAGONAL_NDIM_MESSAGE)
+        if np.any(d <= 0.0):
+            raise ValueError("diagonal entries must be strictly positive")
         if u.ndim != 2:
             raise NotAMatrixError(u.ndim, func="FactorOperator")
         if u.shape[0] != d.shape[0]:
