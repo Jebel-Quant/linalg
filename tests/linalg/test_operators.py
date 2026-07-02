@@ -11,6 +11,7 @@ from cvx.linalg import (
     FactorOperator,
     GramOperator,
     NonSquareMatrixError,
+    NotAMatrixError,
     SymmetricOperator,
 )
 
@@ -181,3 +182,57 @@ def test_factor_operator_rejects_non_positive_diagonal() -> None:
 
     with pytest.raises(ValueError, match="strictly positive"):
         FactorOperator(np.array([1.0, -1.0, 2.0]), np.ones((3, 2)), np.eye(2))
+
+
+def test_dense_operator_rejects_non_matrix() -> None:
+    """A non-2D backing array is rejected."""
+    with pytest.raises(NotAMatrixError):
+        DenseOperator(np.ones(4))
+
+
+def test_gram_operator_rejects_non_matrix() -> None:
+    """A non-2D factor is rejected."""
+    with pytest.raises(NotAMatrixError):
+        GramOperator(np.ones(4))
+
+
+def test_regularized_rejects_non_matrix_factor() -> None:
+    """A non-2D factor is rejected by the regularised constructor."""
+    with pytest.raises(NotAMatrixError):
+        GramOperator.regularized(np.ones(3), 0.5, np.eye(3))
+
+
+def test_regularized_rejects_non_matrix_root() -> None:
+    """A non-2D target root is rejected by the regularised constructor."""
+    with pytest.raises(NotAMatrixError):
+        GramOperator.regularized(np.ones((4, 3)), 0.5, np.ones(3))
+
+
+def test_factor_operator_rejects_non_1d_diagonal() -> None:
+    """The diagonal must be one-dimensional."""
+    with pytest.raises(ValueError, match="1-D"):
+        FactorOperator(np.eye(3), np.ones((3, 2)), np.eye(2))
+
+
+def test_factor_operator_rejects_non_matrix_loadings() -> None:
+    """The loadings must be a 2-D matrix."""
+    with pytest.raises(NotAMatrixError):
+        FactorOperator(np.ones(3), np.ones(3), np.eye(1))
+
+
+def test_factor_operator_rejects_loadings_length_mismatch() -> None:
+    """Loadings must have one row per diagonal entry."""
+    with pytest.raises(DimensionMismatchError):
+        FactorOperator(np.ones(3), np.ones((4, 2)), np.eye(2))
+
+
+def test_factor_operator_rejects_non_matrix_inner() -> None:
+    """The inner block must be a 2-D matrix."""
+    with pytest.raises(NotAMatrixError):
+        FactorOperator(np.ones(3), np.ones((3, 2)), np.ones(2))
+
+
+def test_factor_operator_rejects_non_square_inner() -> None:
+    """The inner block must be square."""
+    with pytest.raises(NonSquareMatrixError):
+        FactorOperator(np.ones(3), np.ones((3, 2)), np.ones((2, 3)))
