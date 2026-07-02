@@ -39,6 +39,12 @@ Functions:
     valid: Extract valid submatrix from a matrix with NaN values
     warn_ill_conditioned: Emit an IllConditionedMatrixWarning for a condition number
 
+Operators:
+    SymmetricOperator: Protocol exposing a symmetric matrix through block products and a free-block solve
+    DenseOperator: SymmetricOperator backed by an explicit dense matrix
+    GramOperator: SymmetricOperator A = M.T @ M represented by its factor M (matrix-free)
+    FactorOperator: Diagonal-plus-low-rank SymmetricOperator with Woodbury free-block solves
+
 Types:
     Matrix: Type alias for a 2-D NumPy array
     Vector: Type alias for a 1-D NumPy array
@@ -87,6 +93,10 @@ from .lstsq import lstsq as lstsq
 from .norm import a_norm as a_norm
 from .norm import inv_a_norm as inv_a_norm
 from .norm import norm as norm
+from .operators import DenseOperator as DenseOperator
+from .operators import FactorOperator as FactorOperator
+from .operators import GramOperator as GramOperator
+from .operators import SymmetricOperator as SymmetricOperator
 from .pca import pca as pca
 from .power_iteration import power_iteration as power_iteration
 from .qr import qr as qr
@@ -100,7 +110,10 @@ from .valid import valid as valid
 
 __all__ = [
     "DEFAULT_COND_THRESHOLD",
+    "DenseOperator",
     "DimensionMismatchError",
+    "FactorOperator",
+    "GramOperator",
     "IllConditionedMatrixWarning",
     "InvalidComponentsError",
     "Matrix",
@@ -109,6 +122,7 @@ __all__ = [
     "NonSquareMatrixError",
     "NotAMatrixError",
     "SingularMatrixError",
+    "SymmetricOperator",
     "Vector",
     "a_norm",
     "check_and_warn_condition",
