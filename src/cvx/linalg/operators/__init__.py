@@ -52,6 +52,7 @@ Example:
 """
 
 from .base import SymmetricOperator as SymmetricOperator
+from .composite import SumOperator as SumOperator
 from .dense import DenseOperator as DenseOperator
 from .dense import IncrementalDenseOperator as IncrementalDenseOperator
 from .factor import FactorOperator as FactorOperator
@@ -62,5 +63,6 @@ __all__ = [
     "FactorOperator",
     "GramOperator",
     "IncrementalDenseOperator",
+    "SumOperator",
     "SymmetricOperator",
 ]

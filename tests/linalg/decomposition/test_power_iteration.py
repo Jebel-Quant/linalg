@@ -72,3 +72,47 @@ def test_power_iteration_respects_iteration_cap() -> None:
     matrix = np.diag([2.0, 1.999, 0.5])
     eigenvalue, _ = power_iteration(matrix, n_iter=2, tol=0.0, seed=0)
     assert 1.9 < eigenvalue <= 2.0
+
+
+# --- operator-aware power iteration -------------------------------------------
+
+
+def test_power_iteration_on_symmetric_operator() -> None:
+    """Runs matrix-free on a SymmetricOperator; matches the dense dominant eigenvalue."""
+    from cvx.linalg import GramOperator
+
+    rng = np.random.default_rng(0)
+    m = rng.standard_normal((20, 6))
+    lam, vec = power_iteration(GramOperator(m), seed=0)
+    assert np.isclose(lam, np.linalg.eigvalsh(m.T @ m)[-1])
+    assert vec.shape == (6,)
+
+
+def test_power_iteration_on_sum_operator() -> None:
+    """A composite (Gram + Factor) is handled matrix-free via its matvec."""
+    from cvx.linalg import FactorOperator, GramOperator, SumOperator
+
+    rng = np.random.default_rng(1)
+    m = rng.standard_normal((25, 7))
+    d = rng.uniform(0.5, 1.5, 7)
+    u = rng.standard_normal((7, 2))
+    delta = np.diag(rng.uniform(0.5, 2.0, 2))
+    op = SumOperator([(0.7, GramOperator(m)), (0.3, FactorOperator(d, u, delta))])
+    a = 0.7 * (m.T @ m) + 0.3 * (np.diag(d) + u @ delta @ u.T)
+    lam, _ = power_iteration(op, seed=0)
+    assert np.isclose(lam, np.linalg.eigvalsh(a)[-1])
+
+
+def test_power_iteration_on_callable() -> None:
+    """A bare matvec callable works when the dimension n is supplied."""
+    rng = np.random.default_rng(2)
+    a = rng.standard_normal((5, 5))
+    a = a @ a.T + 5 * np.eye(5)
+    lam, _ = power_iteration(lambda v: a @ v, n=5, seed=0)
+    assert np.isclose(lam, np.linalg.eigvalsh(a)[-1])
+
+
+def test_power_iteration_callable_requires_n() -> None:
+    """A callable operator needs an explicit dimension."""
+    with pytest.raises(ValueError, match="needs `n`"):
+        power_iteration(lambda v: v, seed=0)
