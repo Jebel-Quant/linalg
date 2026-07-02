@@ -5,10 +5,18 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com),
 and entries are generated from [Conventional Commits](https://www.conventionalcommits.org).
 
+## [0.9.3] - 2026-07-02
+
+### New Features
+- Add k attribute (number of factors) to FactorOperator (#82)
+
 ## [0.9.2] - 2026-07-02
 
 ### New Features
 - Kkt subpackage — bordered_solve + AffineProjection (#81)
+
+### Other Changes
+- Bump version 0.9.1 → 0.9.2
 
 ## [0.9.1] - 2026-07-02
 
