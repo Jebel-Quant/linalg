@@ -4,8 +4,10 @@ Active-set and Krylov solvers never need a symmetric matrix ``A`` as an explicit
 array. They touch it through only a handful of products: a full matrix-vector
 product ``A x``, an arbitrary sub-block product ``A[rows, cols] v``, and a direct
 solve ``A[free, free]^{-1} rhs`` against a principal ("free") sub-block. This
-module captures exactly that contract as :class:`SymmetricOperator` and provides
-three backends that implement it at very different cost:
+module captures exactly that contract as :class:`SymmetricOperator` -- together
+with :meth:`SymmetricOperator.rcond_free`, a conditioning check an active-set
+solver uses to detect a rank-deficient free block -- and provides four backends
+that implement it at very different cost:
 
 * :class:`DenseOperator` wraps an explicit ``n x n`` matrix.
 * :class:`GramOperator` represents ``A = M.T @ M`` from a factor ``M`` and never
@@ -13,6 +15,8 @@ three backends that implement it at very different cost:
 * :class:`FactorOperator` represents a diagonal-plus-low-rank
   ``A = diag(d) + U @ Delta @ U.T`` and inverts free blocks by the Woodbury
   identity.
+* :class:`IncrementalDenseOperator` is a :class:`DenseOperator` that maintains the
+  free-block inverse across single-index changes for active-set sweeps.
 
 Two solving strategies compose with the same protocol. A direct solver consumes
 :meth:`SymmetricOperator.solve_free`; a matrix-free conjugate-gradient solver
@@ -64,6 +68,7 @@ __all__ = [
     "DenseOperator",
     "FactorOperator",
     "GramOperator",
+    "IncrementalDenseOperator",
     "SymmetricOperator",
 ]
 
@@ -79,6 +84,22 @@ def _as_index(indices: object) -> np.ndarray:
     if np.unique(idx).size != idx.size:
         raise ValueError(_INDEX_DUPLICATE_MESSAGE)
     return idx
+
+
+def _rcond_symmetric(block: Matrix) -> float:
+    """Reciprocal 2-norm condition number of a symmetric positive-(semi)definite block.
+
+    Returns a value in ``[0, 1]`` read off the symmetric eigenvalues
+    (``lambda_min / lambda_max``): ``1`` is perfectly conditioned, ``0`` numerically
+    singular. Deterministic and BLAS-independent. An empty block is well conditioned.
+    """
+    if block.shape[0] == 0:
+        return 1.0
+    eigenvalues = np.linalg.eigvalsh(block)
+    lam_max = float(eigenvalues[-1])
+    if lam_max <= 0.0:
+        return 0.0
+    return max(float(eigenvalues[0]), 0.0) / lam_max
 
 
 class SymmetricOperator(ABC):
@@ -114,6 +135,16 @@ class SymmetricOperator(ABC):
 
         ``A[free, free]`` must be positive definite; a Krylov solver that would
         rather iterate should call :meth:`apply_free` instead.
+        """
+
+    @abstractmethod
+    def rcond_free(self, free: object) -> float:
+        """Return the reciprocal 2-norm condition number of ``A[free, free]``.
+
+        A value in ``[0, 1]`` (``1`` well conditioned, ``0`` numerically singular).
+        An active-set solver uses this to detect a rank-deficient free block before
+        trusting :meth:`solve_free`. Backends compute it from their structure
+        without materialising the ``len(free) x len(free)`` block.
         """
 
     def apply_free(self, free: object, v: Vector | Matrix) -> Vector | Matrix:
@@ -173,6 +204,11 @@ class DenseOperator(SymmetricOperator):
         """Solve the free block by Cholesky (LU fallback via :func:`cholesky_solve`)."""
         free = _as_index(free)
         return cholesky_solve(self._a[np.ix_(free, free)], rhs)
+
+    def rcond_free(self, free: object) -> float:
+        """Reciprocal condition number of the free block from its symmetric eigenvalues."""
+        free = _as_index(free)
+        return _rcond_symmetric(self._a[np.ix_(free, free)])
 
 
 class GramOperator(SymmetricOperator):
@@ -303,6 +339,27 @@ class GramOperator(SymmetricOperator):
             block = block + self._ridge * np.eye(n_free)
         return cholesky_solve(block, rhs)
 
+    def rcond_free(self, free: object) -> float:
+        """Reciprocal condition number of the free block from the SVD of ``M[:, free]``.
+
+        The eigenvalues of ``M_F.T M_F + ridge I`` are ``sigma_i**2 + ridge`` for the
+        singular values ``sigma_i`` of ``M_F``, with extra ``ridge`` eigenvalues when
+        the free set outgrows the rank of ``M_F``. Reads the conditioning off the
+        ``(m, len(free))`` factor block without forming the ``len(free)`` square block,
+        so a rank-deficient free set correctly drives the result toward zero.
+        """
+        free = _as_index(free)
+        n_free = free.size
+        if n_free == 0:
+            return 1.0
+        singular_values = np.linalg.svd(self._m[:, free], compute_uv=False)
+        eig = singular_values**2
+        lam_max = (float(eig[0]) if eig.size else 0.0) + self._ridge
+        if lam_max <= 0.0:
+            return 0.0
+        lam_min = self._ridge if n_free > singular_values.shape[0] else float(eig[-1]) + self._ridge
+        return max(lam_min, 0.0) / lam_max
+
 
 class FactorOperator(SymmetricOperator):
     """Diagonal-plus-low-rank operator ``A = diag(d) + U @ Delta @ U.T``.
@@ -389,3 +446,120 @@ class FactorOperator(SymmetricOperator):
         correction = (uf @ inner).T / df
         result: Vector | Matrix = dinv_rhs - correction.T
         return result
+
+    def rcond_free(self, free: object) -> float:
+        """Lower bound on the free block's reciprocal condition number, via Weyl's inequalities.
+
+        The free block ``diag(d_F) + U_F Delta U_F.T`` is positive definite (the
+        positive diagonal keeps it full rank). Rather than form it, bound
+        ``lambda_min >= min(d_F)`` and
+        ``lambda_max <= max(d_F) + ||U_F||_2^2 * lambda_max(Delta)``; their ratio is
+        a guaranteed lower bound on the true reciprocal condition number, at
+        ``O(len(free) r**2 + r**3)`` and without an ``n x n`` matrix.
+        """
+        free = _as_index(free)
+        if free.size == 0:
+            return 1.0
+        d_free = self._d[free]
+        u_free = self._u[free]
+        u_spectral_norm = float(np.linalg.svd(u_free, compute_uv=False)[0])
+        delta_max = float(np.linalg.eigvalsh(self._delta)[-1])
+        lam_max_upper = float(np.max(d_free)) + u_spectral_norm**2 * max(delta_max, 0.0)
+        return float(np.min(d_free)) / lam_max_upper
+
+
+class IncrementalDenseOperator(DenseOperator):
+    """Dense operator that maintains ``A[free, free]^{-1}`` across single-index flips.
+
+    A drop-in :class:`DenseOperator` whose :meth:`solve_free` reuses the previous
+    free-block inverse when the free set changed by exactly one index since the last
+    call, updating it with a rank-one bordered (index added) or deletion (index
+    removed) formula at ``O(len(free)**2)`` instead of refactorising at
+    ``O(len(free)**3)``. Any other change -- the first solve, a multi-index change,
+    or a non-positive/non-finite pivot -- recomputes the inverse from scratch.
+
+    This suits an active-set loop that changes its free set one index at a time. The
+    free index arrays must be **ascending** (as produced by ``np.flatnonzero`` of a
+    boolean mask) and *rhs* aligned to that order; the maintained inverse and the
+    returned solution follow the same order. :meth:`matvec`, :meth:`block_matvec`, and
+    :meth:`rcond_free` are the plain dense ones -- only :meth:`solve_free` differs.
+
+    A maintained inverse accumulates rounding over the ``O(n)`` updates of a sweep, so
+    on ill-conditioned problems the plain :class:`DenseOperator` (a clean solve each
+    step) is the safer choice.
+
+    Example:
+        >>> import numpy as np
+        >>> from cvx.linalg import IncrementalDenseOperator
+        >>> op = IncrementalDenseOperator(np.eye(3))
+        >>> np.allclose(op.solve_free(np.array([0, 1]), np.array([1.0, 2.0])), [1.0, 2.0])
+        True
+    """
+
+    def __init__(self, matrix: Matrix) -> None:
+        """Wrap ``matrix`` (validated as in :class:`DenseOperator`) and start with no cache."""
+        super().__init__(matrix)
+        self._free_idx: np.ndarray | None = None
+        self._inv: Matrix | None = None
+
+    def solve_free(self, free: object, rhs: Vector | Matrix) -> Vector | Matrix:
+        """Solve ``A[free, free] @ y = rhs`` using the maintained (incrementally updated) inverse."""
+        cur = _as_index(free)
+        inv = self._inverse_for(cur)
+        self._free_idx, self._inv = cur, inv
+        return inv @ rhs
+
+    def _inverse_for(self, cur: np.ndarray) -> Matrix:
+        """Return ``A[cur, cur]^{-1}``, updating the cache incrementally when possible."""
+        prev, prev_inv = self._free_idx, self._inv
+        if prev is None or prev_inv is None:
+            return self._refactor(cur)
+        added = np.setdiff1d(cur, prev, assume_unique=True)
+        removed = np.setdiff1d(prev, cur, assume_unique=True)
+        if added.size == 1 and removed.size == 0:
+            updated = self._insert(prev, prev_inv, int(added[0]), cur)
+        elif removed.size == 1 and added.size == 0:
+            updated = self._delete(prev, prev_inv, int(removed[0]))
+        else:
+            updated = None  # not a single-index flip; recompute
+        return updated if updated is not None else self._refactor(cur)
+
+    def _refactor(self, cur: np.ndarray) -> Matrix:
+        """Invert ``A[cur, cur]`` from scratch."""
+        if cur.size == 0:
+            return np.zeros((0, 0))
+        inv: Matrix = np.linalg.inv(self._a[np.ix_(cur, cur)])
+        return inv
+
+    def _insert(self, prev: np.ndarray, prev_inv: Matrix, asset: int, cur: np.ndarray) -> Matrix | None:
+        """Rank-one bordered update for one index entering the free set (``None`` if the pivot is bad)."""
+        c = self._a[prev, asset]
+        v = prev_inv @ c
+        schur = float(self._a[asset, asset] - c @ v)
+        if not np.isfinite(schur) or schur <= 0.0:
+            return None
+        k = prev.shape[0]
+        aug = np.empty((k + 1, k + 1))
+        aug[:k, :k] = prev_inv + np.outer(v, v) / schur
+        aug[:k, k] = -v / schur
+        aug[k, :k] = -v / schur
+        aug[k, k] = 1.0 / schur
+        # ``aug`` is ordered [prev..., asset]; permute to ascending ``cur`` order.
+        perm = np.empty(k + 1, dtype=np.intp)
+        is_new = cur == asset
+        perm[is_new] = k
+        perm[~is_new] = np.searchsorted(prev, cur[~is_new])
+        permuted: Matrix = aug[np.ix_(perm, perm)]
+        return permuted
+
+    def _delete(self, prev: np.ndarray, prev_inv: Matrix, asset: int) -> Matrix | None:
+        """Rank-one deletion update for one index leaving the free set (``None`` if the pivot is bad)."""
+        p = int(np.searchsorted(prev, asset))
+        pivot = float(prev_inv[p, p])
+        if not np.isfinite(pivot) or pivot <= 0.0:
+            return None
+        mask = np.ones(prev.shape[0], dtype=bool)
+        mask[p] = False
+        col = prev_inv[mask, p]
+        updated: Matrix = prev_inv[np.ix_(mask, mask)] - np.outer(col, col) / pivot
+        return updated
