@@ -5,6 +5,11 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com),
 and entries are generated from [Conventional Commits](https://www.conventionalcommits.org).
 
+## [0.9.1] - 2026-07-02
+
+### New Features
+- Add rcond_free and IncrementalDenseOperator to the operator layer (#80)
+
 ## [0.9.0] - 2026-07-02
 
 ### New Features
@@ -30,6 +35,7 @@ and entries are generated from [Conventional Commits](https://www.conventionalco
 - Sync Rhiza template v0.19.3 → v0.19.4 (#59)
 - Sync Rhiza template v0.19.4 → v0.19.6 (#62)
 - Sync Rhiza template v0.19.6 → v0.19.9 (#67)
+- Bump version 0.8.0 → 0.9.0
 
 ## [0.8.0] - 2026-06-16
 
