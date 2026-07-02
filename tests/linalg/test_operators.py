@@ -59,6 +59,46 @@ def test_gram_operator_matches_gram() -> None:
     _check_against_dense(GramOperator(m), a, rng)
 
 
+def test_gram_ridge_matches_dense() -> None:
+    """GramOperator with a ridge reproduces A = M.T @ M + ridge * I (m >= n path)."""
+    rng = np.random.default_rng(11)
+    m = rng.standard_normal((30, 8))
+    ridge = 0.7
+    a = m.T @ m + ridge * np.eye(8)
+    _check_against_dense(GramOperator(m, ridge=ridge), a, rng)
+
+
+def test_gram_ridge_tspace_woodbury_solve() -> None:
+    """With m < len(free) the ridge solve uses row-space Woodbury and stays exact."""
+    rng = np.random.default_rng(12)
+    m = rng.standard_normal((4, 12))  # under-determined: M.T M has rank <= 4
+    ridge = 0.5
+    op = GramOperator(m, ridge=ridge)
+    free = np.arange(12)  # len(free) = 12 > 4 rows -> Woodbury branch
+    a = m.T @ m + ridge * np.eye(12)
+    rhs = rng.standard_normal(12)
+    assert np.allclose(a[np.ix_(free, free)] @ op.solve_free(free, rhs), rhs)
+    rhs_mat = rng.standard_normal((12, 3))
+    assert np.allclose(a[np.ix_(free, free)] @ op.solve_free(free, rhs_mat), rhs_mat)
+
+
+def test_gram_ridge_woodbury_matches_normal_equations() -> None:
+    """The row-space Woodbury branch agrees with the direct normal-equations solve."""
+    rng = np.random.default_rng(13)
+    m = rng.standard_normal((5, 9))
+    ridge = 0.3
+    free = np.array([0, 2, 3, 5, 7, 8])  # len 6 > m = 5 -> Woodbury branch
+    rhs = rng.standard_normal(len(free))
+    block = m[:, free].T @ m[:, free] + ridge * np.eye(len(free))
+    assert np.allclose(GramOperator(m, ridge=ridge).solve_free(free, rhs), np.linalg.solve(block, rhs))
+
+
+def test_gram_rejects_negative_ridge() -> None:
+    """A negative ridge is rejected."""
+    with pytest.raises(ValueError, match="ridge"):
+        GramOperator(np.ones((4, 3)), ridge=-1.0)
+
+
 def test_factor_operator_matches_dense() -> None:
     """FactorOperator reproduces diag(d) + U Delta U.T, Woodbury solve included."""
     rng = np.random.default_rng(2)
