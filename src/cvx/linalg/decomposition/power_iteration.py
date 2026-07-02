@@ -114,9 +114,12 @@ def _resolve(
     n: int | None,
 ) -> tuple[Callable[[Vector], Vector], int]:
     """Return ``(apply, dimension)`` for an array, a SymmetricOperator, or a callable."""
-    matvec = getattr(operator, "matvec", None)
-    if matvec is not None and hasattr(operator, "n"):
-        return matvec, int(operator.n)  # type: ignore[union-attr]
+    # Imported lazily: operators depend on decomposition.cholesky, so a module-level
+    # import would close an import cycle (hence the TYPE_CHECKING-only import above).
+    from ..operators import SymmetricOperator
+
+    if isinstance(operator, SymmetricOperator):
+        return operator.matvec, operator.n
     if not isinstance(operator, np.ndarray) and callable(operator):
         if n is None:
             raise ValueError(_CALLABLE_NEEDS_N_MESSAGE)
