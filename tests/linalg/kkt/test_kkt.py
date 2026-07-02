@@ -16,6 +16,7 @@ from cvx.linalg import (
 
 
 def _spd(n: int, rng: np.random.Generator) -> np.ndarray:
+    """Return a random ``n``-by-``n`` symmetric positive-definite matrix."""
     b = rng.standard_normal((n, n))
     return b @ b.T + n * np.eye(n)
 
