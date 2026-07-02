@@ -137,3 +137,47 @@ def test_regularized_rejects_mismatched_root() -> None:
     """The target root must have as many columns as the factor."""
     with pytest.raises(DimensionMismatchError):
         GramOperator.regularized(np.ones((4, 3)), 0.5, np.eye(2))
+
+
+def test_block_matvec_rejects_duplicate_indices() -> None:
+    """An index set with repeated positions is rejected."""
+    op = DenseOperator(np.eye(4))
+    with pytest.raises(ValueError, match="duplicate"):
+        op.block_matvec(np.array([0, 2, 2]), np.array([1, 3]), np.ones(2))
+
+
+def test_solve_free_rejects_duplicate_indices() -> None:
+    """The free set passed to a solve must not contain duplicates."""
+    op = DenseOperator(np.eye(4))
+    with pytest.raises(ValueError, match="duplicate"):
+        op.solve_free(np.array([1, 1]), np.ones(2))
+
+
+def test_index_rejects_non_integer_dtype() -> None:
+    """A non-integer index set is rejected."""
+    op = DenseOperator(np.eye(4))
+    with pytest.raises(ValueError, match="integer positions"):
+        op.apply_free(np.array([0.0, 1.0]), np.ones(2))
+
+
+def test_index_rejects_boolean_dtype() -> None:
+    """A boolean mask is not accepted as an integer index set."""
+    op = DenseOperator(np.eye(4))
+    with pytest.raises(ValueError, match="integer positions"):
+        op.apply_free(np.array([True, False, True, False]), np.ones(2))
+
+
+def test_index_rejects_non_1d() -> None:
+    """An index set must be one-dimensional."""
+    op = DenseOperator(np.eye(4))
+    with pytest.raises(ValueError, match="1-D"):
+        op.apply_free(np.array([[0, 1], [2, 3]]), np.ones(2))
+
+
+def test_factor_operator_rejects_non_positive_diagonal() -> None:
+    """FactorOperator requires a strictly positive diagonal."""
+    with pytest.raises(ValueError, match="strictly positive"):
+        FactorOperator(np.array([1.0, 0.0, 2.0]), np.ones((3, 2)), np.eye(2))
+
+    with pytest.raises(ValueError, match="strictly positive"):
+        FactorOperator(np.array([1.0, -1.0, 2.0]), np.ones((3, 2)), np.eye(2))
