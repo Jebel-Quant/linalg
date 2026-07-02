@@ -382,6 +382,8 @@ class FactorOperator(SymmetricOperator):
         >>> U = np.array([[1.0], [0.5], [-1.0]])
         >>> Delta = np.array([[2.0]])
         >>> op = FactorOperator(d, U, Delta)
+        >>> (op.n, op.k)                          # 3 assets, 1 factor
+        (3, 1)
         >>> A = np.diag(d) + U @ Delta @ U.T
         >>> free, rhs = np.array([0, 2]), np.array([1.0, 1.0])
         >>> np.allclose(A[np.ix_(free, free)] @ op.solve_free(free, rhs), rhs)
@@ -415,6 +417,11 @@ class FactorOperator(SymmetricOperator):
     def n(self) -> int:
         """Dimension of the operator (length of the diagonal ``d``)."""
         return int(self._d.shape[0])
+
+    @property
+    def k(self) -> int:
+        """Number of factors (rank ``r`` of the low-rank term; columns of ``U``)."""
+        return int(self._u.shape[1])
 
     def matvec(self, x: Vector | Matrix) -> Vector | Matrix:
         """Return ``A @ x = d * x + U @ (Delta @ (U.T @ x))``."""

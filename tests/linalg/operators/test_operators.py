@@ -162,6 +162,11 @@ def test_n_property() -> None:
     assert FactorOperator(np.ones(5), np.ones((5, 2)), np.eye(2)).n == 5
 
 
+def test_factor_operator_k_property() -> None:
+    """FactorOperator reports its number of factors (columns of U)."""
+    assert FactorOperator(np.ones(5), np.ones((5, 3)), np.eye(3)).k == 3
+
+
 def test_symmetric_operator_is_abstract() -> None:
     """The protocol base class cannot be instantiated directly."""
     with pytest.raises(TypeError):
