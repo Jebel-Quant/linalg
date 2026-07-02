@@ -46,6 +46,10 @@ Operators:
     FactorOperator: Diagonal-plus-low-rank SymmetricOperator with Woodbury free-block solves
     IncrementalDenseOperator: DenseOperator maintaining the free-block inverse across single-index flips
 
+Constrained solves:
+    bordered_solve: Range-space (Schur complement) solve of a bordered KKT system over a SymmetricOperator
+    AffineProjection: Euclidean projection onto the affine set {x : C x = d}, caching the Gram matrix
+
 Types:
     Matrix: Type alias for a 2-D NumPy array
     Vector: Type alias for a 1-D NumPy array
@@ -97,6 +101,8 @@ from .decomposition import power_iteration as power_iteration
 from .decomposition import qr as qr
 from .decomposition import svd as svd
 from .decomposition import svd_k as svd_k
+from .kkt import AffineProjection as AffineProjection
+from .kkt import bordered_solve as bordered_solve
 from .norm import a_norm as a_norm
 from .norm import inv_a_norm as inv_a_norm
 from .norm import norm as norm
@@ -112,6 +118,7 @@ from .solve import solve as solve
 
 __all__ = [
     "DEFAULT_COND_THRESHOLD",
+    "AffineProjection",
     "DenseOperator",
     "DimensionMismatchError",
     "FactorOperator",
@@ -128,6 +135,7 @@ __all__ = [
     "SymmetricOperator",
     "Vector",
     "a_norm",
+    "bordered_solve",
     "check_and_warn_condition",
     "cholesky",
     "cholesky_solve",
