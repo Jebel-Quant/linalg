@@ -148,7 +148,7 @@ class DenseOperator(SymmetricOperator):
     @property
     def n(self) -> int:
         """Dimension of the operator."""
-        return self._a.shape[0]
+        return int(self._a.shape[0])
 
     def matvec(self, x: Vector | Matrix) -> Vector | Matrix:
         """Return ``A @ x`` by dense multiplication."""
@@ -158,7 +158,8 @@ class DenseOperator(SymmetricOperator):
         """Return ``A[rows, cols] @ v`` by slicing the dense matrix."""
         rows = _as_index(rows)
         cols = _as_index(cols)
-        return self._a[np.ix_(rows, cols)] @ v
+        result: Vector | Matrix = self._a[np.ix_(rows, cols)] @ v
+        return result
 
     def solve_free(self, free: object, rhs: Vector | Matrix) -> Vector | Matrix:
         """Solve the free block by Cholesky (LU fallback via :func:`cholesky_solve`)."""
@@ -244,7 +245,7 @@ class GramOperator(SymmetricOperator):
     @property
     def n(self) -> int:
         """Dimension of the operator (columns of the factor ``M``)."""
-        return self._m.shape[1]
+        return int(self._m.shape[1])
 
     def matvec(self, x: Vector | Matrix) -> Vector | Matrix:
         """Return ``A @ x = M.T @ (M @ x)`` without forming ``A``."""
@@ -314,7 +315,7 @@ class FactorOperator(SymmetricOperator):
     @property
     def n(self) -> int:
         """Dimension of the operator (length of the diagonal ``d``)."""
-        return self._d.shape[0]
+        return int(self._d.shape[0])
 
     def matvec(self, x: Vector | Matrix) -> Vector | Matrix:
         """Return ``A @ x = d * x + U @ (Delta @ (U.T @ x))``."""
@@ -329,7 +330,8 @@ class FactorOperator(SymmetricOperator):
         common, r_idx, c_idx = np.intersect1d(rows, cols, return_indices=True)
         diag = np.zeros_like(low_rank)
         diag[r_idx] = (self._d[common] * np.asarray(v)[c_idx].T).T
-        return low_rank + diag
+        result: Vector | Matrix = low_rank + diag
+        return result
 
     def solve_free(self, free: object, rhs: Vector | Matrix) -> Vector | Matrix:
         """Solve the free block by the Woodbury identity on the ``r x r`` capacitance matrix."""
@@ -342,4 +344,5 @@ class FactorOperator(SymmetricOperator):
         w = np.linalg.inv(self._delta) + uf.T @ ((uf.T / df).T)
         inner = cholesky_solve(w, uf.T @ dinv_rhs)
         correction = (uf @ inner).T / df
-        return dinv_rhs - correction.T
+        result: Vector | Matrix = dinv_rhs - correction.T
+        return result
