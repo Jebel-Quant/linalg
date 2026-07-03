@@ -5,10 +5,18 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com),
 and entries are generated from [Conventional Commits](https://www.conventionalcommits.org).
 
+## [0.9.6] - 2026-07-03
+
+### Other Changes
+- *(free)* Pre-sliced free-block operators (closes #88) (#89)
+
 ## [0.9.5] - 2026-07-03
 
 ### New Features
 - Add diag attribute to SymmetricOperator and its backends (#87)
+
+### Other Changes
+- Bump version 0.9.4 → 0.9.5
 
 ## [0.9.4] - 2026-07-02
 
