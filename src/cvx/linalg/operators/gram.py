@@ -117,6 +117,11 @@ class GramOperator(SymmetricOperator):
         product = self._m.T @ (self._m @ x)
         return product + self._ridge * x if self._ridge else product
 
+    def restricted(self, free: object) -> GramOperator:
+        """Return ``GramOperator(M[:, free], ridge)``: the free block, pre-sliced."""
+        free = _as_index(free)
+        return GramOperator(np.ascontiguousarray(self._m[:, free]), ridge=self._ridge)
+
     def block_matvec(self, rows: object, cols: object, v: Vector | Matrix) -> Vector | Matrix:
         """Return ``A[rows, cols] @ v = M[:, rows].T @ (M[:, cols] @ v)`` plus the ridge overlap."""
         rows = _as_index(rows)

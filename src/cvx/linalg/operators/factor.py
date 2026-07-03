@@ -85,6 +85,11 @@ class FactorOperator(SymmetricOperator):
         """Return ``A @ x = d * x + U @ (Delta @ (U.T @ x))``."""
         return (self._d * x.T).T + self._u @ (self._delta @ (self._u.T @ x))
 
+    def restricted(self, free: object) -> FactorOperator:
+        """Return ``FactorOperator(d[free], U[free], Delta)``: the free block, pre-sliced."""
+        free = _as_index(free)
+        return FactorOperator(self._d[free], np.ascontiguousarray(self._u[free, :]), self._delta)
+
     def block_matvec(self, rows: object, cols: object, v: Vector | Matrix) -> Vector | Matrix:
         """Return ``A[rows, cols] @ v`` from the low-rank term and the diagonal overlap."""
         rows = _as_index(rows)
