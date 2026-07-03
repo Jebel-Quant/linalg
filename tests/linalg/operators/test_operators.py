@@ -11,9 +11,11 @@ from cvx.linalg import (
     FactorOperator,
     GramOperator,
     IncrementalDenseOperator,
+    Matrix,
     NonSquareMatrixError,
     NotAMatrixError,
     SymmetricOperator,
+    Vector,
 )
 
 
@@ -33,6 +35,8 @@ def _check_against_dense(op: SymmetricOperator, a: np.ndarray, rng: np.random.Ge
     n = a.shape[0]
     x = rng.standard_normal(n)
     assert np.allclose(op.matvec(x), a @ x)
+
+    assert np.allclose(op.diag, np.diag(a))
 
     perm = rng.permutation(n)
     free = np.sort(perm[: n // 2])
@@ -293,6 +297,70 @@ def test_factor_operator_rejects_non_square_inner() -> None:
     """The inner block must be square."""
     with pytest.raises(NonSquareMatrixError):
         FactorOperator(np.ones(3), np.ones((3, 2)), np.ones((2, 3)))
+
+
+# --- diag ----------------------------------------------------------------------
+
+
+class _NoDiagOperator(SymmetricOperator):
+    """Minimal backend that leaves the base class's default ``diag`` in place."""
+
+    @property
+    def n(self) -> int:
+        """Fixed dimension of 2."""
+        return 2
+
+    def matvec(self, x: Vector | Matrix) -> Vector | Matrix:
+        """Identity product."""
+        return x
+
+    def block_matvec(self, rows: object, cols: object, v: Vector | Matrix) -> Vector | Matrix:
+        """Identity sub-block product."""
+        return v
+
+    def solve_free(self, free: object, rhs: Vector | Matrix) -> Vector | Matrix:
+        """Identity solve."""
+        return rhs
+
+    def rcond_free(self, free: object) -> float:
+        """Perfectly conditioned."""
+        return 1.0
+
+
+def test_diag_default_raises() -> None:
+    """A backend that does not override ``diag`` raises NotImplementedError."""
+    with pytest.raises(NotImplementedError, match="diagonal"):
+        _ = _NoDiagOperator().diag
+
+
+def test_diag_matches_dense_per_backend() -> None:
+    """Each backend's diag equals the diagonal of the matrix it represents."""
+    rng = np.random.default_rng(30)
+    b = rng.standard_normal((6, 6))
+    a = b @ b.T + 6 * np.eye(6)
+    assert np.allclose(DenseOperator(a).diag, np.diag(a))
+    assert np.allclose(IncrementalDenseOperator(a).diag, np.diag(a))
+
+    m = rng.standard_normal((4, 6))
+    ridge = 0.3
+    assert np.allclose(GramOperator(m).diag, np.diag(m.T @ m))
+    assert np.allclose(GramOperator(m, ridge=ridge).diag, np.diag(m.T @ m + ridge * np.eye(6)))
+
+    d = rng.uniform(1.0, 2.0, 6)
+    u = rng.standard_normal((6, 2))
+    c = rng.standard_normal((2, 2))
+    delta = c @ c.T + np.eye(2)
+    assert np.allclose(FactorOperator(d, u, delta).diag, np.diag(np.diag(d) + u @ delta @ u.T))
+
+
+def test_diag_free_slice_is_free_block_diagonal() -> None:
+    """diag[free] is the diagonal of the free block (the Jacobi preconditioner for CG)."""
+    rng = np.random.default_rng(31)
+    m = rng.standard_normal((5, 8))
+    op = GramOperator(m, ridge=0.2)
+    free = np.array([1, 4, 6])
+    a = m.T @ m + 0.2 * np.eye(8)
+    assert np.allclose(op.diag[free], np.diag(a[np.ix_(free, free)]))
 
 
 # --- rcond_free ---------------------------------------------------------------

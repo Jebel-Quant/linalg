@@ -16,6 +16,7 @@ from ..core.types import Matrix, Vector
 
 _INDEX_NDIM_MESSAGE = "index set must be a 1-D array of integer positions"
 _INDEX_DUPLICATE_MESSAGE = "index set must not contain duplicates"
+_NO_DIAG_MESSAGE = "this operator does not expose its diagonal"
 
 
 def _as_index(indices: object) -> np.ndarray:
@@ -51,14 +52,29 @@ class SymmetricOperator(ABC):
     """A symmetric operator accessed only through block products and a free solve.
 
     Subclasses implement :meth:`matvec`, :meth:`block_matvec`, and
-    :meth:`solve_free`; :meth:`apply_free` is derived. Index sets passed to the
-    block methods are 1-D arrays of integer positions into ``range(n)``.
+    :meth:`solve_free`; :meth:`apply_free` is derived and :attr:`diag` is
+    optional (it raises unless the backend overrides it). Index sets passed to
+    the block methods are 1-D arrays of integer positions into ``range(n)``.
     """
 
     @property
     @abstractmethod
     def n(self) -> int:
         """Dimension of the operator (it acts on vectors of length ``n``)."""
+
+    @property
+    def diag(self) -> Vector:
+        """The diagonal of ``A`` as a length-``n`` vector.
+
+        The natural Jacobi preconditioner for a Krylov solve over
+        :meth:`apply_free` (the free block's diagonal is ``diag[free]``).
+        Backends override this with a closed form read off their structure;
+        the default raises for operators without a cheap diagonal.
+
+        Raises:
+            NotImplementedError: If the backend does not expose its diagonal.
+        """
+        raise NotImplementedError(_NO_DIAG_MESSAGE)
 
     @abstractmethod
     def matvec(self, x: Vector | Matrix) -> Vector | Matrix:

@@ -47,6 +47,12 @@ class DenseOperator(SymmetricOperator):
         """Dimension of the operator."""
         return int(self._a.shape[0])
 
+    @property
+    def diag(self) -> Vector:
+        """The diagonal of the backing matrix (a read-only view)."""
+        result: Vector = np.diagonal(self._a)
+        return result
+
     def matvec(self, x: Vector | Matrix) -> Vector | Matrix:
         """Return ``A @ x`` by dense multiplication."""
         return self._a @ x
