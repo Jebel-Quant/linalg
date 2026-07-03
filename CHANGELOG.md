@@ -5,6 +5,11 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com),
 and entries are generated from [Conventional Commits](https://www.conventionalcommits.org).
 
+## [0.9.5] - 2026-07-03
+
+### New Features
+- Add diag attribute to SymmetricOperator and its backends (#87)
+
 ## [0.9.4] - 2026-07-02
 
 ### New Features
@@ -12,6 +17,9 @@ and entries are generated from [Conventional Commits](https://www.conventionalco
 
 ### Maintenance
 - *(operators)* Split module and cover degenerate paths (#85)
+
+### Other Changes
+- Bump version 0.9.3 → 0.9.4
 
 ## [0.9.3] - 2026-07-02
 
