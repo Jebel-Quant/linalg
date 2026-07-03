@@ -109,7 +109,7 @@ class SymmetricOperator(ABC):
         without materialising the ``len(free) x len(free)`` block.
         """
 
-    def restricted(self, free: object) -> "SymmetricOperator":
+    def restricted(self, free: object) -> SymmetricOperator:
         """Return the operator of ``A[free, free]`` with pre-sliced storage.
 
         Use this to hoist the free-set restriction out of an iterative solve:

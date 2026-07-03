@@ -75,19 +75,19 @@ def test_restricted_default_raises() -> None:
             """Fixed dimension of 2."""
             return 2
 
-        def matvec(self, x):  # noqa: ANN001, ANN201
+        def matvec(self, x):
             """Identity product."""
             return x
 
-        def block_matvec(self, rows, cols, v):  # noqa: ANN001, ANN201
+        def block_matvec(self, rows, cols, v):
             """Identity sub-block product."""
             return v
 
-        def solve_free(self, free, rhs):  # noqa: ANN001, ANN201
+        def solve_free(self, free, rhs):
             """Identity solve."""
             return rhs
 
-        def rcond_free(self, free) -> float:  # noqa: ANN001
+        def rcond_free(self, free) -> float:
             """Perfect conditioning."""
             return 1.0
 
