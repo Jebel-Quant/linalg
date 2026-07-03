@@ -106,6 +106,12 @@ class GramOperator(SymmetricOperator):
         """Dimension of the operator (columns of the factor ``M``)."""
         return int(self._m.shape[1])
 
+    @property
+    def diag(self) -> Vector:
+        """The diagonal ``||M[:, j]||**2 + ridge`` (squared column norms of the factor)."""
+        result: Vector = np.einsum("ij,ij->j", self._m, self._m) + self._ridge
+        return result
+
     def matvec(self, x: Vector | Matrix) -> Vector | Matrix:
         """Return ``A @ x = M.T @ (M @ x) + ridge * x`` without forming ``A``."""
         product = self._m.T @ (self._m @ x)

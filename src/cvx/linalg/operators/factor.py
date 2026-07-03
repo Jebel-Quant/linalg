@@ -75,6 +75,12 @@ class FactorOperator(SymmetricOperator):
         """Number of factors (rank ``r`` of the low-rank term; columns of ``U``)."""
         return int(self._u.shape[1])
 
+    @property
+    def diag(self) -> Vector:
+        """The diagonal ``d_i + U[i] @ Delta @ U[i]``, at ``O(n r**2)`` without forming ``A``."""
+        result: Vector = self._d + np.einsum("ij,ij->i", self._u @ self._delta, self._u)
+        return result
+
     def matvec(self, x: Vector | Matrix) -> Vector | Matrix:
         """Return ``A @ x = d * x + U @ (Delta @ (U.T @ x))``."""
         return (self._d * x.T).T + self._u @ (self._delta @ (self._u.T @ x))

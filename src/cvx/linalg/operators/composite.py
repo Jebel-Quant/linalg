@@ -27,7 +27,9 @@ class SumOperator(SymmetricOperator):
     structural conditioning estimate, so :meth:`solve_free` and
     :meth:`rcond_free` raise :class:`NotImplementedError`. Feed
     :meth:`apply_free` to a Krylov solver (conjugate gradients) instead -- which
-    is exactly how such a composite is used.
+    is exactly how such a composite is used. :attr:`diag` *is* available (the
+    weighted sum of the terms' diagonals, provided every term exposes one) and
+    supplies the Jacobi preconditioner for that solve.
 
     Args:
         terms: A non-empty sequence of ``(coeff, operator)`` pairs. All operators
@@ -44,6 +46,8 @@ class SumOperator(SymmetricOperator):
         True
         >>> free = np.array([0, 1])
         >>> np.allclose(op.apply_free(free, np.array([1.0, 1.0])), A @ np.ones(2))
+        True
+        >>> np.allclose(op.diag, np.diag(A))                # Jacobi preconditioner
         True
     """
 
@@ -62,6 +66,19 @@ class SumOperator(SymmetricOperator):
     def n(self) -> int:
         """Dimension shared by the terms."""
         return int(self._n)
+
+    @property
+    def diag(self) -> Vector:
+        """The weighted sum of the terms' diagonals.
+
+        Raises:
+            NotImplementedError: If any term does not expose its diagonal.
+        """
+        coeff, op = self._terms[0]
+        result: Vector = coeff * op.diag
+        for coeff, op in self._terms[1:]:
+            result = result + coeff * op.diag
+        return result
 
     def matvec(self, x: Vector | Matrix) -> Vector | Matrix:
         """Return ``A @ x = sum_i coeff_i * op_i.matvec(x)``."""

@@ -67,3 +67,32 @@ def test_sum_operator_rcond_free_not_implemented() -> None:
     op = SumOperator([(1.0, DenseOperator(np.eye(3)))])
     with pytest.raises(NotImplementedError):
         op.rcond_free(np.array([0, 1]))
+
+
+def test_sum_operator_diag_is_weighted_sum() -> None:
+    """Diag is the weighted sum of the terms' diagonals, matrix-free terms included."""
+    rng = np.random.default_rng(2)
+    m = rng.standard_normal((20, 7))
+    d = rng.uniform(0.5, 1.5, 7)
+    u = rng.standard_normal((7, 2))
+    delta = np.diag(rng.uniform(0.5, 2.0, 2))
+    alpha = 0.4
+    op = SumOperator([(1.0 - alpha, GramOperator(m)), (alpha, FactorOperator(d, u, delta))])
+    a = (1.0 - alpha) * (m.T @ m) + alpha * (np.diag(d) + u @ delta @ u.T)
+    assert np.allclose(op.diag, np.diag(a))
+
+
+def test_sum_operator_diag_propagates_missing_term_diag() -> None:
+    """A term without a diagonal makes the sum's diag raise as well."""
+
+    class _NoDiag(DenseOperator):
+        """Dense backend with the diagonal override removed again."""
+
+        @property
+        def diag(self) -> np.ndarray:
+            """Unavailable, as on the base class."""
+            raise NotImplementedError("this operator does not expose its diagonal")
+
+    op = SumOperator([(1.0, DenseOperator(np.eye(3))), (1.0, _NoDiag(np.eye(3)))])
+    with pytest.raises(NotImplementedError, match="diagonal"):
+        _ = op.diag
