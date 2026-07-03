@@ -57,6 +57,11 @@ class DenseOperator(SymmetricOperator):
         """Return ``A @ x`` by dense multiplication."""
         return self._a @ x
 
+    def restricted(self, free: object) -> DenseOperator:
+        """Return ``DenseOperator(A[free, free])``: the free block, pre-sliced."""
+        free = _as_index(free)
+        return DenseOperator(self._a[np.ix_(free, free)])
+
     def block_matvec(self, rows: object, cols: object, v: Vector | Matrix) -> Vector | Matrix:
         """Return ``A[rows, cols] @ v`` by slicing the dense matrix."""
         rows = _as_index(rows)

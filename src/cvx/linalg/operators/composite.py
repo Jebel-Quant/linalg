@@ -88,6 +88,10 @@ class SumOperator(SymmetricOperator):
             result = result + coeff * op.matvec(x)
         return result
 
+    def restricted(self, free: object) -> SumOperator:
+        """Return the sum of the terms' restricted operators (same coefficients)."""
+        return SumOperator([(c, op.restricted(free)) for c, op in self._terms])
+
     def block_matvec(self, rows: object, cols: object, v: Vector | Matrix) -> Vector | Matrix:
         """Return ``A[rows, cols] @ v`` as the weighted sum of the terms' sub-block products."""
         coeff, op = self._terms[0]

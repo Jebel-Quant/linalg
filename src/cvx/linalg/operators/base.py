@@ -14,6 +14,7 @@ import numpy as np
 
 from ..core.types import Matrix, Vector
 
+_RESTRICTED_DEFAULT_MESSAGE = "this backend does not implement restricted(free)"
 _INDEX_NDIM_MESSAGE = "index set must be a 1-D array of integer positions"
 _INDEX_DUPLICATE_MESSAGE = "index set must not contain duplicates"
 _NO_DIAG_MESSAGE = "this operator does not expose its diagonal"
@@ -108,12 +109,26 @@ class SymmetricOperator(ABC):
         without materialising the ``len(free) x len(free)`` block.
         """
 
+    def restricted(self, free: object) -> "SymmetricOperator":
+        """Return the operator of ``A[free, free]`` with pre-sliced storage.
+
+        Use this to hoist the free-set restriction out of an iterative solve:
+        build the restricted operator once per working set, then call its
+        :meth:`matvec` inside the loop. Calling :meth:`apply_free` per
+        iteration instead re-gathers the underlying storage (e.g. the factor
+        columns of a Gram operator) on every call, which can dominate the
+        useful arithmetic by an order of magnitude. Backends override this
+        with a pre-sliced copy of their structure; the default raises.
+        """
+        raise NotImplementedError(_RESTRICTED_DEFAULT_MESSAGE)
+
     def apply_free(self, free: object, v: Vector | Matrix) -> Vector | Matrix:
         """Return ``A[free, free] @ v``, the free-block forward product.
 
-        This is the single operation a matrix-free conjugate-gradient solve on
-        the free block requires; it is :meth:`block_matvec` with equal row and
-        column sets.
+        It is :meth:`block_matvec` with equal row and column sets. Each call
+        gathers the free-block storage; for repeated products on a fixed free
+        set (a CG loop), build :meth:`restricted` once and use its
+        :meth:`matvec`.
         """
         free = _as_index(free)
         return self.block_matvec(free, free, v)
