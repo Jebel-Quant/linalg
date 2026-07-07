@@ -95,3 +95,24 @@ def test_pca_result_type_and_exposure() -> None:
         result.systematic,
         atol=1e-12,
     )
+
+
+def test_pca_centers_returns_by_column_mean() -> None:
+    """pca() centers returns by the per-column mean before decomposing.
+
+    Adding a per-column constant to every row of the input must leave the
+    mean-centered structure — explained variance and idiosyncratic residuals —
+    unchanged, while ``systematic`` shifts by exactly that constant. This pins
+    the centering behaviour through observable outputs alone, without reaching
+    into how pca performs the decomposition.
+    """
+    rng = np.random.default_rng(1)
+    returns = rng.standard_normal((40, 5))
+    shift = rng.standard_normal(5)  # constant added to every row
+
+    base = pca(returns, n_components=2)
+    shifted = pca(returns + shift, n_components=2)
+
+    np.testing.assert_allclose(shifted.explained_variance, base.explained_variance, atol=1e-10)
+    np.testing.assert_allclose(shifted.idiosyncratic, base.idiosyncratic, atol=1e-10)
+    np.testing.assert_allclose(shifted.systematic, base.systematic + shift, atol=1e-10)
