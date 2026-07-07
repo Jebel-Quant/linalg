@@ -5,10 +5,19 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com),
 and entries are generated from [Conventional Commits](https://www.conventionalcommits.org).
 
+## [1.0.0] - 2026-07-07
+
+### Documentation
+- Restructure README around the nested subpackage layout (#90)
+
+### Maintenance
+- Update rhiza to v1.0.2 (#93)
+
 ## [0.9.6] - 2026-07-03
 
 ### Other Changes
 - *(free)* Pre-sliced free-block operators (closes #88) (#89)
+- Bump version 0.9.5 → 0.9.6
 
 ## [0.9.5] - 2026-07-03
 
