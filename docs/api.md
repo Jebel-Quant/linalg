@@ -114,3 +114,5 @@ from cvx.linalg.covariance.ewm_cov import ewm_covariance  # requires the 'ewm' e
 ::: cvx.linalg.core.types.Matrix
 
 ::: cvx.linalg.core.types.Vector
+
+::: cvx.linalg.core.types.SupportsMatvec

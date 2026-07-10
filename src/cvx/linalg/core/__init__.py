@@ -13,6 +13,7 @@ from .exceptions import check_and_warn_condition as check_and_warn_condition
 from .exceptions import cond as cond
 from .exceptions import warn_ill_conditioned as warn_ill_conditioned
 from .types import Matrix as Matrix
+from .types import SupportsMatvec as SupportsMatvec
 from .types import Vector as Vector
 from .valid import valid as valid
 
@@ -27,6 +28,7 @@ __all__ = [
     "NonSquareMatrixError",
     "NotAMatrixError",
     "SingularMatrixError",
+    "SupportsMatvec",
     "Vector",
     "check_and_warn_condition",
     "cond",

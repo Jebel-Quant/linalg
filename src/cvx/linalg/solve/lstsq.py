@@ -3,10 +3,24 @@
 from __future__ import annotations
 
 import numpy as np
+import numpy.typing as npt
 
 from ..core.exceptions import DEFAULT_COND_THRESHOLD, DimensionMismatchError
 from ..core.exceptions import warn_ill_conditioned as _warn_ill_conditioned
 from ..core.types import Matrix, Vector
+
+
+def _condition_number(sv: npt.NDArray[np.floating]) -> float:
+    """Condition number ``sv[0] / sv[-1]`` from descending singular values.
+
+    Returns ``inf`` when the smallest singular value is zero and ``1.0`` when
+    there are no singular values (an empty valid sub-matrix).
+    """
+    if sv.size == 0:
+        return 1.0
+    if sv[-1] > 0:
+        return float(sv[0] / sv[-1])
+    return float("inf")
 
 
 def lstsq(
@@ -74,15 +88,7 @@ def lstsq(
 
     x, residuals, rank, sv = np.linalg.lstsq(sub_matrix, sub_rhs, rcond=None)
 
-    # Compute condition number from singular values.
-    if sv.size > 0 and sv[-1] > 0:
-        cond = float(sv[0] / sv[-1])
-    elif sv.size > 0:
-        cond = float("inf")
-    else:
-        cond = 1.0
-
-    _warn_ill_conditioned(cond, cond_threshold)
+    _warn_ill_conditioned(_condition_number(sv), cond_threshold)
 
     return (
         x.astype(np.float64, copy=False),

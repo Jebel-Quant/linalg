@@ -62,6 +62,15 @@ test = [
 lint = [
     "ruff>=0.4.0",
 ]
+typecheck = [
+    "ty>=0.0.57",
+    "mypy>=1.0.0",
+]
+
+[tool.uv]
+# Install the typecheck tools alongside dev so `uv run ty check` / `uv run mypy`
+# (and the make typecheck target) resolve them from the project environment.
+default-groups = ["dev", "typecheck"]
 
 [tool.coverage.run]
 branch = true

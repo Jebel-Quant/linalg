@@ -126,15 +126,18 @@ class IncrementalDenseOperator(DenseOperator):
         prev, prev_inv = self._free_idx, self._inv
         if prev is None or prev_inv is None:
             return self._refactor(cur)
+        updated = self._single_flip_update(prev, prev_inv, cur)
+        return updated if updated is not None else self._refactor(cur)
+
+    def _single_flip_update(self, prev: np.ndarray, prev_inv: Matrix, cur: np.ndarray) -> Matrix | None:
+        """Rank-one update for a one-index change from *prev* to *cur* (``None`` otherwise)."""
         added = np.setdiff1d(cur, prev, assume_unique=True)
         removed = np.setdiff1d(prev, cur, assume_unique=True)
         if added.size == 1 and removed.size == 0:
-            updated = self._insert(prev, prev_inv, int(added[0]), cur)
-        elif removed.size == 1 and added.size == 0:
-            updated = self._delete(prev, prev_inv, int(removed[0]))
-        else:
-            updated = None  # not a single-index flip; recompute
-        return updated if updated is not None else self._refactor(cur)
+            return self._insert(prev, prev_inv, int(added[0]), cur)
+        if removed.size == 1 and added.size == 0:
+            return self._delete(prev, prev_inv, int(removed[0]))
+        return None  # not a single-index flip; recompute
 
     def _refactor(self, cur: np.ndarray) -> Matrix:
         """Invert ``A[cur, cur]`` from scratch."""

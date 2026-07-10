@@ -18,6 +18,7 @@ from cvx.linalg import (
     NonSquareMatrixError,
     NotAMatrixError,
     SingularMatrixError,
+    check_and_warn_condition,
     cond,
 )
 from cvx.linalg.core.exceptions import DEFAULT_COND_THRESHOLD, warn_ill_conditioned
@@ -195,3 +196,18 @@ def test_warn_ill_conditioned_not_at_exact_threshold() -> None:
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         warn_ill_conditioned(1e12, 1e12)
+
+
+def test_check_and_warn_condition_warns_when_cond_exceeds_threshold() -> None:
+    """check_and_warn_condition computes the matrix condition number, then warns above threshold."""
+    # cond(I) == 1, so a threshold below 1 must trip the warning.
+    with pytest.warns(IllConditionedMatrixWarning):
+        check_and_warn_condition(np.eye(2), 0.5)
+
+
+def test_check_and_warn_condition_silent_when_well_conditioned() -> None:
+    """check_and_warn_condition does not warn when the condition number is within threshold."""
+    # cond(I) == 1 <= 2.0, so no warning is emitted.
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        check_and_warn_condition(np.eye(2), 2.0)

@@ -54,6 +54,7 @@ Constrained solves:
 Types:
     Matrix: Type alias for a 2-D NumPy array
     Vector: Type alias for a 1-D NumPy array
+    SupportsMatvec: Structural protocol for a matrix-free operator (exposes n and matvec)
 
 Exceptions:
     DimensionMismatchError: Raised when operand dimensions are incompatible
@@ -84,6 +85,7 @@ from .core import NonIntegerWarmupError as NonIntegerWarmupError
 from .core import NonSquareMatrixError as NonSquareMatrixError
 from .core import NotAMatrixError as NotAMatrixError
 from .core import SingularMatrixError as SingularMatrixError
+from .core import SupportsMatvec as SupportsMatvec
 from .core import Vector as Vector
 from .core import check_and_warn_condition as check_and_warn_condition
 from .core import cond as cond
@@ -135,6 +137,7 @@ __all__ = [
     "NotAMatrixError",
     "SingularMatrixError",
     "SumOperator",
+    "SupportsMatvec",
     "SymmetricOperator",
     "Vector",
     "a_norm",
