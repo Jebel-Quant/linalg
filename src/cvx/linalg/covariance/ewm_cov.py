@@ -6,7 +6,7 @@ This module requires the optional ``polars`` dependency. Install it with
 
 from __future__ import annotations
 
-from collections.abc import Hashable
+from collections.abc import Callable, Hashable
 
 import numpy as np
 
@@ -22,6 +22,31 @@ except ImportError as exc:  # pragma: no cover
         "install it with `pip install cvx-linalg[ewm]` or `pip install polars`."
     )
     raise ImportError(_msg) from exc
+
+
+def _validate_warmup(warmup: int) -> None:
+    """Check *warmup* is a non-negative integer (booleans rejected)."""
+    if isinstance(warmup, bool) or not isinstance(warmup, int):
+        raise NonIntegerWarmupError(warmup)
+    if warmup < 0:
+        raise NegativeWarmupError(warmup)
+
+
+def _pairwise_cov_exprs(assets: list[str], ewm: Callable[[pl.Expr], pl.Expr]) -> list[pl.Expr]:
+    """Build the upper-triangular EWM covariance expression for each asset pair.
+
+    Uses ``Cov(X, Y) = EWM(X*Y) - EWM(X)*EWM(Y)`` over the pair's common
+    non-null observations, masking each mean to where the *other* asset is present.
+    """
+    return [
+        (
+            ewm(pl.col(a) * pl.col(b))
+            - ewm(pl.when(pl.col(b).is_null()).then(None).otherwise(pl.col(a)))
+            * ewm(pl.when(pl.col(a).is_null()).then(None).otherwise(pl.col(b)))
+        ).alias(f"{a}_{b}")
+        for i, a in enumerate(assets)
+        for b in assets[i:]
+    ]
 
 
 def ewm_covariance(
@@ -70,10 +95,7 @@ def ewm_covariance(
         NegativeWarmupError: If *warmup* is negative.
 
     """
-    if isinstance(warmup, bool) or not isinstance(warmup, int):
-        raise NonIntegerWarmupError(warmup)
-    if warmup < 0:
-        raise NegativeWarmupError(warmup)
+    _validate_warmup(warmup)
 
     n = len(assets)
     min_samples = 1 if warmup == 0 else warmup
@@ -84,17 +106,7 @@ def ewm_covariance(
             return expr.ewm_mean(half_life=window, min_samples=min_samples)
         return expr.ewm_mean(span=window, min_samples=min_samples)
 
-    cov_exprs = [
-        (
-            _ewm(pl.col(a) * pl.col(b))
-            - _ewm(pl.when(pl.col(b).is_null()).then(None).otherwise(pl.col(a)))
-            * _ewm(pl.when(pl.col(a).is_null()).then(None).otherwise(pl.col(b)))
-        ).alias(f"{a}_{b}")
-        for i, a in enumerate(assets)
-        for b in assets[i:]
-    ]
-
-    pair_df = data.with_columns(cov_exprs).drop(assets)
+    pair_df = data.with_columns(_pairwise_cov_exprs(assets, _ewm)).drop(assets)
     all_keys = pair_df[index_col].to_list()
     pair_arr = pair_df.drop(index_col).to_numpy()
 

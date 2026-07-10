@@ -3,21 +3,17 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import TYPE_CHECKING
 
 import numpy as np
 
 from ..core.exceptions import NonSquareMatrixError, NotAMatrixError
-from ..core.types import Matrix, Vector
-
-if TYPE_CHECKING:
-    from ..operators import SymmetricOperator
+from ..core.types import Matrix, SupportsMatvec, Vector
 
 _CALLABLE_NEEDS_N_MESSAGE = "power_iteration needs `n` when `operator` is a bare callable"
 
 
 def power_iteration(
-    operator: Matrix | SymmetricOperator | Callable[[Vector], Vector],
+    operator: Matrix | SupportsMatvec | Callable[[Vector], Vector],
     *,
     n: int | None = None,
     n_iter: int = 1000,
@@ -110,20 +106,28 @@ def power_iteration(
 
 
 def _resolve(
-    operator: Matrix | SymmetricOperator | Callable[[Vector], Vector],
+    operator: Matrix | SupportsMatvec | Callable[[Vector], Vector],
     n: int | None,
 ) -> tuple[Callable[[Vector], Vector], int]:
-    """Return ``(apply, dimension)`` for an array, a SymmetricOperator, or a callable."""
-    # Imported lazily: operators depend on decomposition.cholesky, so a module-level
-    # import would close an import cycle (hence the TYPE_CHECKING-only import above).
-    from ..operators import SymmetricOperator
+    """Return ``(apply, dimension)`` for an array, a SymmetricOperator, or a callable.
 
-    if isinstance(operator, SymmetricOperator):
+    The operator is matched structurally against :class:`~cvx.linalg.core.types.SupportsMatvec`
+    (a lower layer than :mod:`~cvx.linalg.operators`), so this needs no import of the
+    operator backends and closes no import cycle.
+    """
+    if isinstance(operator, SupportsMatvec):
         return operator.matvec, operator.n
     if not isinstance(operator, np.ndarray) and callable(operator):
         if n is None:
             raise ValueError(_CALLABLE_NEEDS_N_MESSAGE)
         return operator, int(n)
+    return _array_apply(operator)
+
+
+def _array_apply(
+    operator: Matrix | SupportsMatvec | Callable[[Vector], Vector],
+) -> tuple[Callable[[Vector], Vector], int]:
+    """Return ``(v -> A @ v, n)`` for a dense square array, validating its shape."""
     array = np.asarray(operator)
     if array.ndim != 2:
         raise NotAMatrixError(array.ndim, func="power_iteration")

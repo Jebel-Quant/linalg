@@ -13,6 +13,32 @@ _DIAGONAL_NDIM_MESSAGE = "diagonal must be a 1-D array"
 _DIAGONAL_POSITIVE_MESSAGE = "diagonal entries must be strictly positive"
 
 
+def _validate_diagonal(d: Vector) -> None:
+    """Check the diagonal is a 1-D, strictly positive vector."""
+    if d.ndim != 1:
+        raise ValueError(_DIAGONAL_NDIM_MESSAGE)
+    if np.any(d <= 0.0):
+        raise ValueError(_DIAGONAL_POSITIVE_MESSAGE)
+
+
+def _validate_loadings(u: Matrix, d: Vector) -> None:
+    """Check the loadings are an ``n x r`` matrix whose rows match the diagonal."""
+    if u.ndim != 2:
+        raise NotAMatrixError(u.ndim, func="FactorOperator")
+    if u.shape[0] != d.shape[0]:
+        raise DimensionMismatchError(u.shape[0], d.shape[0])
+
+
+def _validate_inner(delta: Matrix, u: Matrix) -> None:
+    """Check the inner block is a square ``r x r`` matrix matching the loadings' rank."""
+    if delta.ndim != 2:
+        raise NotAMatrixError(delta.ndim, func="FactorOperator")
+    if delta.shape[0] != delta.shape[1]:
+        raise NonSquareMatrixError(delta.shape[0], delta.shape[1])
+    if delta.shape[0] != u.shape[1]:
+        raise DimensionMismatchError(delta.shape[0], u.shape[1])
+
+
 class FactorOperator(SymmetricOperator):
     """Diagonal-plus-low-rank operator ``A = diag(d) + U @ Delta @ U.T``.
 
@@ -47,20 +73,9 @@ class FactorOperator(SymmetricOperator):
         d = np.asarray(diagonal, dtype=np.float64)
         u = np.asarray(loadings, dtype=np.float64)
         delta = np.asarray(inner, dtype=np.float64)
-        if d.ndim != 1:
-            raise ValueError(_DIAGONAL_NDIM_MESSAGE)
-        if np.any(d <= 0.0):
-            raise ValueError(_DIAGONAL_POSITIVE_MESSAGE)
-        if u.ndim != 2:
-            raise NotAMatrixError(u.ndim, func="FactorOperator")
-        if u.shape[0] != d.shape[0]:
-            raise DimensionMismatchError(u.shape[0], d.shape[0])
-        if delta.ndim != 2:
-            raise NotAMatrixError(delta.ndim, func="FactorOperator")
-        if delta.shape[0] != delta.shape[1]:
-            raise NonSquareMatrixError(delta.shape[0], delta.shape[1])
-        if delta.shape[0] != u.shape[1]:
-            raise DimensionMismatchError(delta.shape[0], u.shape[1])
+        _validate_diagonal(d)
+        _validate_loadings(u, d)
+        _validate_inner(delta, u)
         self._d = d
         self._u = u
         self._delta = delta

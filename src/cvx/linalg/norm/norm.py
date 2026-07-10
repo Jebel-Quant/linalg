@@ -20,6 +20,14 @@ from ..core.valid import valid
 from ..decomposition.cholesky import cholesky_solve as _cholesky_solve
 
 
+def _validate_square(vector: Vector, matrix: Matrix) -> None:
+    """Check *matrix* is square and its dimension matches *vector*'s length."""
+    if matrix.shape[0] != matrix.shape[1]:
+        raise NonSquareMatrixError(matrix.shape[0], matrix.shape[1])
+    if vector.size != matrix.shape[0]:
+        raise DimensionMismatchError(vector.size, matrix.shape[0])
+
+
 def norm(
     x: Vector | Matrix,
     ord: int | float | Literal["fro", "nuc"] | None = None,  # noqa: A002  # mirrors np.linalg.norm public API
@@ -74,11 +82,7 @@ def a_norm(vector: Vector, matrix: Matrix | None = None) -> float:
     if matrix is None:
         return float(np.linalg.norm(vector[np.isfinite(vector)], 2))
 
-    if matrix.shape[0] != matrix.shape[1]:
-        raise NonSquareMatrixError(matrix.shape[0], matrix.shape[1])
-
-    if vector.size != matrix.shape[0]:
-        raise DimensionMismatchError(vector.size, matrix.shape[0])
+    _validate_square(vector, matrix)
 
     mask, submatrix = valid(matrix)
     if mask.any():
@@ -128,11 +132,7 @@ def inv_a_norm(
     if matrix is None:
         return float(np.linalg.norm(vector[np.isfinite(vector)], 2))
 
-    if matrix.shape[0] != matrix.shape[1]:
-        raise NonSquareMatrixError(matrix.shape[0], matrix.shape[1])
-
-    if vector.size != matrix.shape[0]:
-        raise DimensionMismatchError(vector.size, matrix.shape[0])
+    _validate_square(vector, matrix)
 
     mask, submatrix = valid(matrix)
     if mask.any():
