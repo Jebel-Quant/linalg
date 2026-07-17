@@ -1,4 +1,4 @@
-"""Tests for :meth:`SymmetricOperator.restricted`: pre-sliced free-block operators."""
+"""Tests for the ``SymmetricOperator`` base class: abstract contract, index validation, and shared defaults."""
 
 from __future__ import annotations
 
@@ -9,8 +9,10 @@ from cvx.linalg import (
     DenseOperator,
     FactorOperator,
     GramOperator,
+    Matrix,
     SumOperator,
     SymmetricOperator,
+    Vector,
 )
 
 
@@ -40,6 +42,97 @@ def _operators(rng: np.random.Generator) -> list[tuple[SymmetricOperator, np.nda
         )
     )
     return pairs
+
+
+class _NoDiagOperator(SymmetricOperator):
+    """Minimal backend that leaves the base class's default ``diag`` in place."""
+
+    @property
+    def n(self) -> int:
+        """Fixed dimension of 2."""
+        return 2
+
+    def matvec(self, x: Vector | Matrix) -> Vector | Matrix:
+        """Identity product."""
+        return x
+
+    def block_matvec(self, rows: object, cols: object, v: Vector | Matrix) -> Vector | Matrix:
+        """Identity sub-block product."""
+        return v
+
+    def solve_free(self, free: object, rhs: Vector | Matrix) -> Vector | Matrix:
+        """Identity solve."""
+        return rhs
+
+    def rcond_free(self, free: object) -> float:
+        """Perfectly conditioned."""
+        return 1.0
+
+
+# --- abstract contract & defaults ---------------------------------------------
+
+
+def test_symmetric_operator_is_abstract() -> None:
+    """The protocol base class cannot be instantiated directly."""
+    with pytest.raises(TypeError):
+        SymmetricOperator()  # type: ignore[abstract]
+
+
+def test_diag_default_raises() -> None:
+    """A backend that does not override ``diag`` raises NotImplementedError."""
+    with pytest.raises(NotImplementedError, match="diagonal"):
+        _ = _NoDiagOperator().diag
+
+
+def test_apply_free_is_block_matvec_diagonal() -> None:
+    """apply_free equals block_matvec with equal row and column sets."""
+    rng = np.random.default_rng(5)
+    a = np.diag(rng.uniform(1, 2, 6)) + 0.1 * np.ones((6, 6))
+    op = DenseOperator(a)
+    free = np.array([1, 3, 5])
+    v = rng.standard_normal(3)
+    assert np.allclose(op.apply_free(free, v), op.block_matvec(free, free, v))
+
+
+# --- index validation (shared _as_index helper) -------------------------------
+
+
+def test_block_matvec_rejects_duplicate_indices() -> None:
+    """An index set with repeated positions is rejected."""
+    op = DenseOperator(np.eye(4))
+    with pytest.raises(ValueError, match="duplicate"):
+        op.block_matvec(np.array([0, 2, 2]), np.array([1, 3]), np.ones(2))
+
+
+def test_solve_free_rejects_duplicate_indices() -> None:
+    """The free set passed to a solve must not contain duplicates."""
+    op = DenseOperator(np.eye(4))
+    with pytest.raises(ValueError, match="duplicate"):
+        op.solve_free(np.array([1, 1]), np.ones(2))
+
+
+def test_index_rejects_non_integer_dtype() -> None:
+    """A non-integer index set is rejected."""
+    op = DenseOperator(np.eye(4))
+    with pytest.raises(ValueError, match="integer positions"):
+        op.apply_free(np.array([0.0, 1.0]), np.ones(2))
+
+
+def test_index_rejects_boolean_dtype() -> None:
+    """A boolean mask is not accepted as an integer index set."""
+    op = DenseOperator(np.eye(4))
+    with pytest.raises(ValueError, match="integer positions"):
+        op.apply_free(np.array([True, False, True, False]), np.ones(2))
+
+
+def test_index_rejects_non_1d() -> None:
+    """An index set must be one-dimensional."""
+    op = DenseOperator(np.eye(4))
+    with pytest.raises(ValueError, match="1-D"):
+        op.apply_free(np.array([[0, 1], [2, 3]]), np.ones(2))
+
+
+# --- restricted (default + backend overrides) ---------------------------------
 
 
 @pytest.mark.parametrize("free", [np.array([0, 2, 5]), np.array([1]), np.arange(7)])

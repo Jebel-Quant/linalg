@@ -73,3 +73,25 @@ All gates run via `make <target>` (never call `.venv/bin/...` directly):
 - Every public symbol needs a docstring — docstring coverage must stay at 100%.
 - Maintain 100% test + branch coverage; add tests alongside any source change.
 - Functions are NaN-aware by design; preserve that when extending them.
+
+## Test layout
+
+Tests mirror the source **one file per source module**: every
+`src/cvx/linalg/<sub>/<mod>.py` has a `tests/linalg/<sub>/test_<mod>.py`
+covering it (e.g. `operators/dense.py` → `operators/test_dense.py`,
+`kkt/bordered.py` → `kkt/test_bordered.py`). Cross-module reference helpers live
+in a non-test module beside the tests — `tests/linalg/operators/_helpers.py`
+holds the dense-reference checks shared by the per-backend files.
+
+Two deliberate deviations from Rhiza's bundled `check_test_layout.py`, which
+this repo does **not** run as a gate:
+
+- **Test root drops the `cvx` namespace.** Tests live under `tests/linalg/…`,
+  not `tests/cvx/linalg/…`; there is a single top-level package, so the extra
+  segment buys nothing. (The checker's file-parity passes when pointed at the
+  package root: `check_test_layout.py --src src/cvx`.)
+- **Function-style tests, no `Test<Class>` wrappers, and cross-cutting files.**
+  Tests are free functions, not classes mirroring each source class. A few files
+  cover behaviour that spans modules and intentionally have no 1:1 source
+  counterpart: `test_property.py` (hypothesis properties), `test_package.py`
+  (packaging/`__version__`), and `test_marimo_notebooks_layout.py`.
