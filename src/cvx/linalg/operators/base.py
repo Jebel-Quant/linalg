@@ -1,8 +1,8 @@
 """The :class:`SymmetricOperator` protocol and shared index/conditioning helpers.
 
 This module holds the abstract contract every backend implements together with
-the two structure-agnostic helpers the backends share: :func:`_as_index`, which
-normalises an index set, and :func:`_rcond_symmetric`, which reads the reciprocal
+the two structure-agnostic helpers the backends share: :func:`as_index`, which
+normalises an index set, and :func:`rcond_symmetric`, which reads the reciprocal
 2-norm condition number off a symmetric block's eigenvalues.
 """
 
@@ -20,7 +20,7 @@ _INDEX_DUPLICATE_MESSAGE = "index set must not contain duplicates"
 _NO_DIAG_MESSAGE = "this operator does not expose its diagonal"
 
 
-def _as_index(indices: object) -> np.ndarray:
+def as_index(indices: object) -> np.ndarray:
     """Coerce an index set to a 1-D integer array."""
     arr = np.asarray(indices)
     if arr.ndim != 1:
@@ -33,7 +33,7 @@ def _as_index(indices: object) -> np.ndarray:
     return idx
 
 
-def _rcond_symmetric(block: Matrix) -> float:
+def rcond_symmetric(block: Matrix) -> float:
     """Reciprocal 2-norm condition number of a symmetric positive-(semi)definite block.
 
     Returns a value in ``[0, 1]`` read off the symmetric eigenvalues
@@ -130,5 +130,5 @@ class SymmetricOperator(ABC):
         set (a CG loop), build :meth:`restricted` once and use its
         :meth:`matvec`.
         """
-        free = _as_index(free)
+        free = as_index(free)
         return self.block_matvec(free, free, v)

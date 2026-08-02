@@ -94,7 +94,7 @@ def test_apply_free_is_block_matvec_diagonal() -> None:
     assert np.allclose(op.apply_free(free, v), op.block_matvec(free, free, v))
 
 
-# --- index validation (shared _as_index helper) -------------------------------
+# --- index validation (shared as_index helper) --------------------------------
 
 
 def test_block_matvec_rejects_duplicate_indices() -> None:

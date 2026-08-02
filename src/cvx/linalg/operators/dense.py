@@ -13,7 +13,7 @@ import numpy as np
 from ..core.exceptions import NonSquareMatrixError, NotAMatrixError
 from ..core.types import Matrix, Vector
 from ..decomposition.cholesky import cholesky_solve
-from .base import SymmetricOperator, _as_index, _rcond_symmetric
+from .base import SymmetricOperator, as_index, rcond_symmetric
 
 
 class DenseOperator(SymmetricOperator):
@@ -59,25 +59,25 @@ class DenseOperator(SymmetricOperator):
 
     def restricted(self, free: object) -> DenseOperator:
         """Return ``DenseOperator(A[free, free])``: the free block, pre-sliced."""
-        free = _as_index(free)
+        free = as_index(free)
         return DenseOperator(self._a[np.ix_(free, free)])
 
     def block_matvec(self, rows: object, cols: object, v: Vector | Matrix) -> Vector | Matrix:
         """Return ``A[rows, cols] @ v`` by slicing the dense matrix."""
-        rows = _as_index(rows)
-        cols = _as_index(cols)
+        rows = as_index(rows)
+        cols = as_index(cols)
         result: Vector | Matrix = self._a[np.ix_(rows, cols)] @ v
         return result
 
     def solve_free(self, free: object, rhs: Vector | Matrix) -> Vector | Matrix:
         """Solve the free block by Cholesky (LU fallback via :func:`cholesky_solve`)."""
-        free = _as_index(free)
+        free = as_index(free)
         return cholesky_solve(self._a[np.ix_(free, free)], rhs)
 
     def rcond_free(self, free: object) -> float:
         """Reciprocal condition number of the free block from its symmetric eigenvalues."""
-        free = _as_index(free)
-        return _rcond_symmetric(self._a[np.ix_(free, free)])
+        free = as_index(free)
+        return rcond_symmetric(self._a[np.ix_(free, free)])
 
 
 class IncrementalDenseOperator(DenseOperator):
@@ -116,7 +116,7 @@ class IncrementalDenseOperator(DenseOperator):
 
     def solve_free(self, free: object, rhs: Vector | Matrix) -> Vector | Matrix:
         """Solve ``A[free, free] @ y = rhs`` using the maintained (incrementally updated) inverse."""
-        cur = _as_index(free)
+        cur = as_index(free)
         inv = self._inverse_for(cur)
         self._free_idx, self._inv = cur, inv
         return inv @ rhs

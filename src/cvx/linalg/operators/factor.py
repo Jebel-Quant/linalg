@@ -7,7 +7,7 @@ import numpy as np
 from ..core.exceptions import DimensionMismatchError, NonSquareMatrixError, NotAMatrixError
 from ..core.types import Matrix, Vector
 from ..decomposition.cholesky import cholesky_solve
-from .base import SymmetricOperator, _as_index
+from .base import SymmetricOperator, as_index
 
 _DIAGONAL_NDIM_MESSAGE = "diagonal must be a 1-D array"
 _DIAGONAL_POSITIVE_MESSAGE = "diagonal entries must be strictly positive"
@@ -102,13 +102,13 @@ class FactorOperator(SymmetricOperator):
 
     def restricted(self, free: object) -> FactorOperator:
         """Return ``FactorOperator(d[free], U[free], Delta)``: the free block, pre-sliced."""
-        free = _as_index(free)
+        free = as_index(free)
         return FactorOperator(self._d[free], np.ascontiguousarray(self._u[free, :]), self._delta)
 
     def block_matvec(self, rows: object, cols: object, v: Vector | Matrix) -> Vector | Matrix:
         """Return ``A[rows, cols] @ v`` from the low-rank term and the diagonal overlap."""
-        rows = _as_index(rows)
-        cols = _as_index(cols)
+        rows = as_index(rows)
+        cols = as_index(cols)
         low_rank = self._u[rows] @ (self._delta @ (self._u[cols].T @ v))
         # Diagonal couples only positions where a row index equals a column index.
         common, r_idx, c_idx = np.intersect1d(rows, cols, return_indices=True)
@@ -119,7 +119,7 @@ class FactorOperator(SymmetricOperator):
 
     def solve_free(self, free: object, rhs: Vector | Matrix) -> Vector | Matrix:
         """Solve the free block by the Woodbury identity on the ``r x r`` capacitance matrix."""
-        free = _as_index(free)
+        free = as_index(free)
         df = self._d[free]
         uf = self._u[free]
         # Woodbury: A_FF^{-1} = D^{-1} - D^{-1} U W^{-1} U.T D^{-1},
@@ -142,7 +142,7 @@ class FactorOperator(SymmetricOperator):
         a guaranteed lower bound on the true reciprocal condition number, at
         ``O(len(free) r**2 + r**3)`` and without an ``n x n`` matrix.
         """
-        free = _as_index(free)
+        free = as_index(free)
         if free.size == 0:
             return 1.0
         d_free = self._d[free]
