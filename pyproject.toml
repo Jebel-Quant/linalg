@@ -70,6 +70,27 @@ typecheck = [
 # (and the make typecheck target) resolve them from the project environment.
 default-groups = ["dev", "typecheck"]
 
+[tool.bumpversion]
+# bump-my-version searches only .bumpversion.toml, .bumpversion.cfg, setup.cfg and
+# pyproject.toml. With no table in one of those it does not fail — it falls back to
+# `git describe` and reports the last reachable tag as the current version, so a
+# release can be cut at a version that was already published. No current_version
+# here: bump-my-version reads and rewrites PEP 621 [project].version natively, and a
+# second copy only drifts.
+allow_dirty = false
+# /rhiza:release commits and tags itself so the changelog lands in the bump commit; a
+# bare `bump-my-version bump` would otherwise add a second commit and duplicate tag.
+commit = false
+tag = false
+
+# uv.lock records this project's own version too, and the uv-lock pre-commit hook
+# fails on a stale lock. Anchored on the package name so no dependency that happens
+# to share the version number is rewritten.
+[[tool.bumpversion.files]]
+filename = "uv.lock"
+search = "name = \"cvx-linalg\"\nversion = \"{current_version}\""
+replace = "name = \"cvx-linalg\"\nversion = \"{new_version}\""
+
 [tool.coverage.run]
 branch = true
 
