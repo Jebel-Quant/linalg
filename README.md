@@ -147,7 +147,7 @@ is everything importable from `cvx.linalg` (plus `cvx.linalg.covariance.ewm_cov`
 - **Breaking changes** only occur in major releases.
 - **Deprecations** are announced at least one minor release before removal and
   emit a `DeprecationWarning` in the meantime (currently: the two-argument
-  `cholesky(cov, rhs)` form — use `cholesky_solve` — slated for removal in 1.0).
+  `cholesky(cov, rhs)` form — use `cholesky_solve` — slated for removal in 2.0).
 - **Supported environments:** Python 3.11–3.14, NumPy ≥ 2.0. The optional
   `ewm` extra requires Polars ≥ 1.40.
 

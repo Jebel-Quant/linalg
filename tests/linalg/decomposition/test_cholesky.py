@@ -10,7 +10,7 @@ import pytest
 from cvx.linalg import cholesky, cholesky_solve, is_positive_definite, rand_cov
 
 _DEPRECATION_MESSAGE = re.escape(
-    "Passing 'rhs' to cholesky() is deprecated and will be removed in 1.0; use cholesky_solve(cov, rhs) instead."
+    "Passing 'rhs' to cholesky() is deprecated and will be removed in 2.0; use cholesky_solve(cov, rhs) instead."
 )
 
 
