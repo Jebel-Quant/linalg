@@ -20,7 +20,7 @@ def cholesky(cov: Matrix, rhs: Vector | Matrix | None = None) -> Vector | Matrix
         cov: A positive definite covariance matrix of shape (n, n).
         rhs: Deprecated. When provided the system ``cov @ x = rhs`` is solved
             and *x* is returned; use :func:`cholesky_solve` instead. This
-            parameter will be removed in 1.0.
+            parameter will be removed in 2.0.
 
     Returns:
         The upper triangular Cholesky factor R when *rhs* is ``None``, or the
@@ -45,7 +45,7 @@ def cholesky(cov: Matrix, rhs: Vector | Matrix | None = None) -> Vector | Matrix
     if rhs is None:
         return cast("Matrix", _cholesky(cov).transpose())
     warnings.warn(
-        "Passing 'rhs' to cholesky() is deprecated and will be removed in 1.0; use cholesky_solve(cov, rhs) instead.",
+        "Passing 'rhs' to cholesky() is deprecated and will be removed in 2.0; use cholesky_solve(cov, rhs) instead.",
         DeprecationWarning,
         stacklevel=2,
     )
