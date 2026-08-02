@@ -83,8 +83,10 @@ covering it (e.g. `operators/dense.py` → `operators/test_dense.py`,
 in a non-test module beside the tests — `tests/linalg/operators/_helpers.py`
 holds the dense-reference checks shared by the per-backend files.
 
-Two deliberate deviations from Rhiza's bundled `check_test_layout.py`, which
-this repo does **not** run as a gate:
+Two deliberate deviations from Rhiza's bundled `check_test_layout.py`. Both are
+declared in `[tool.check_test_layout]` in `pyproject.toml` (`enforce = false`
+plus a `reason`), so the checker reports the layout as intentional instead of as
+53 violations — do not "fix" it by reshuffling the suite:
 
 - **Test root drops the `cvx` namespace.** Tests live under `tests/linalg/…`,
   not `tests/cvx/linalg/…`; there is a single top-level package, so the extra
@@ -95,3 +97,8 @@ this repo does **not** run as a gate:
   cover behaviour that spans modules and intentionally have no 1:1 source
   counterpart: `test_property.py` (hypothesis properties), `test_package.py`
   (packaging/`__version__`), and `test_marimo_notebooks_layout.py`.
+
+Note that `--src src/cvx` resolves only the first deviation: 16 of the remaining
+violations are missing `Test<Class>` wrappers, which the function-style
+convention deliberately does not have. Per-module reach is guaranteed by the
+full line-and-branch coverage gate rather than by file mirroring.

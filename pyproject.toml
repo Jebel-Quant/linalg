@@ -79,6 +79,27 @@ ignore-init-method = false
 ignore-module = false
 verbose = 1
 
+[tool.check_test_layout]
+# Two deliberate deviations from Rhiza's 1:1 parity, both already reasoned out in
+# the "Test layout" section of CLAUDE.md; this table makes that decision
+# machine-readable so the checker reports it as intentional rather than as 53
+# violations.
+#
+#   1. The test root drops the `cvx` namespace segment (tests/linalg/... rather
+#      than tests/cvx/linalg/...). There is a single top-level package, so the
+#      extra segment buys nothing.
+#   2. Tests are free functions, not `Test<Class>` wrappers mirroring each source
+#      class, and three files cover behaviour spanning modules with no 1:1 source
+#      counterpart: properties (hypothesis), packaging/__version__, and the
+#      marimo notebook layout.
+#
+# Pointing the checker at the package root (--src src/cvx) resolves (1) but not
+# (2): 16 of the remaining violations are missing `Test<Class>` wrappers, which
+# the function-style convention deliberately does not have. Per-module coverage
+# is guaranteed by the full line-and-branch coverage gate instead.
+enforce = false
+reason = "Tests mirror one file per source module under tests/linalg/, dropping the redundant cvx namespace segment, and are written as free functions rather than Test<Class> wrappers; three files (properties, packaging, marimo layout) deliberately span modules with no 1:1 counterpart. See the Test layout section of CLAUDE.md. Per-module reach is guaranteed by the full line-and-branch pytest coverage gate."
+
 [tool.deptry]
 known_first_party = ["cvx"]
 
