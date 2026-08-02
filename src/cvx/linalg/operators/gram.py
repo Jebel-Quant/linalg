@@ -7,7 +7,7 @@ import numpy as np
 from ..core.exceptions import DimensionMismatchError, NotAMatrixError
 from ..core.types import Matrix, Vector
 from ..decomposition.cholesky import cholesky_solve
-from .base import SymmetricOperator, _as_index
+from .base import SymmetricOperator, as_index
 
 _ALPHA_RANGE_MESSAGE = "alpha must lie in the interval [0, 1]"
 _RIDGE_NEGATIVE_MESSAGE = "ridge must be non-negative"
@@ -119,13 +119,13 @@ class GramOperator(SymmetricOperator):
 
     def restricted(self, free: object) -> GramOperator:
         """Return ``GramOperator(M[:, free], ridge)``: the free block, pre-sliced."""
-        free = _as_index(free)
+        free = as_index(free)
         return GramOperator(np.ascontiguousarray(self._m[:, free]), ridge=self._ridge)
 
     def block_matvec(self, rows: object, cols: object, v: Vector | Matrix) -> Vector | Matrix:
         """Return ``A[rows, cols] @ v = M[:, rows].T @ (M[:, cols] @ v)`` plus the ridge overlap."""
-        rows = _as_index(rows)
-        cols = _as_index(cols)
+        rows = as_index(rows)
+        cols = as_index(cols)
         product: Vector | Matrix = self._m[:, rows].T @ (self._m[:, cols] @ v)
         if not self._ridge:
             return product
@@ -137,7 +137,7 @@ class GramOperator(SymmetricOperator):
 
     def solve_free(self, free: object, rhs: Vector | Matrix) -> Vector | Matrix:
         """Solve the free block ``M_F.T M_F + ridge * I``, by Woodbury in row space when ``m < len(free)``."""
-        free = _as_index(free)
+        free = as_index(free)
         mf = self._m[:, free]
         m_rows, n_free = mf.shape
         if self._ridge and m_rows < n_free:
@@ -161,7 +161,7 @@ class GramOperator(SymmetricOperator):
         ``(m, len(free))`` factor block without forming the ``len(free)`` square block,
         so a rank-deficient free set correctly drives the result toward zero.
         """
-        free = _as_index(free)
+        free = as_index(free)
         n_free = free.size
         if n_free == 0:
             return 1.0
