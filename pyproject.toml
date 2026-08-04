@@ -46,29 +46,39 @@ include = [
 ]
 
 [dependency-groups]
+# A group here earns its place only when something has to be present in the project
+# *environment*. Every rhiza gate provisions its own tooling on the fly — `--with
+# pytest --with pytest-cov ...` in `test`, `--with ty` / `--with mypy` in `typecheck`,
+# `--with interrogate` in `docs-coverage`, `uvx pre-commit` (which runs the ruff hooks)
+# in `fmt` — so a tool named by a `--with` flag must NOT be declared here; the
+# declaration only duplicates the pin.
+#
+# What does qualify: a library the test suite or a notebook imports.
 dev = [
-    "hypothesis>=6.150.0",
-    "pandas>=3.0.0",
-    "polars>=1.40.0",
-    "marimo>=0.20.0",
-    "pytest>=9.0.3",
+    "hypothesis>=6.150.0",  # tests/linalg/test_property.py imports it directly (not via importorskip)
+    "pandas>=3.0.0",        # test_ewm_cov.py::test_matches_pandas_ewm_cov cross-checks against pandas' ewm
+    "polars>=1.40.0",       # src/cvx/linalg/covariance/ewm_cov.py and its tests
+    "marimo>=0.20.0",       # book/marimo/notebooks/*.py; deptry scans MARIMO_FOLDER, so DEP001 without it
+    "pytest>=9.0.3",        # injected by every pytest-backed target, but declared so a bare `uv run pytest tests/...` works
+    # pytest.ini sets a global `timeout = 60` AND `filterwarnings = error`, and
+    # `benchmark`/`hypothesis-test`/`stress` run pytest WITHOUT injecting this plugin —
+    # so its absence is not a warning here, it is a hard "Unknown config option" failure.
     "pytest-timeout>=2.0",
 ]
 test = [
     "pytest>=9.0.3",
 ]
-lint = [
-    "ruff>=0.4.0",
-]
-typecheck = [
-    "ty>=0.0.57",
-    "mypy>=1.0.0",
-]
+# Empty on purpose: ruff runs through the pre-commit hooks, which `make fmt` executes
+# via uvx. The key stays because the synced .rhiza/tests/test_pyproject.py asserts a
+# 'lint' group is declared; that assertion is gone in rhiza after #1484, so the key can
+# go on the next template sync.
+lint = []
 
 [tool.uv]
-# Install the typecheck tools alongside dev so `uv run ty check` / `uv run mypy`
-# (and the make typecheck target) resolve them from the project environment.
-default-groups = ["dev", "typecheck"]
+# `default-groups` used to add a "typecheck" group here so `uv run ty check` resolved
+# from the project environment. The make typecheck target injects `--with ty` /
+# `--with mypy` itself, so the group is gone and the default (["dev"]) is right.
+default-groups = ["dev"]
 
 [tool.bumpversion]
 # bump-my-version searches only .bumpversion.toml, .bumpversion.cfg, setup.cfg and
