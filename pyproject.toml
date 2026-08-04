@@ -68,11 +68,10 @@ dev = [
 test = [
     "pytest>=9.0.3",
 ]
-# Empty on purpose: ruff runs through the pre-commit hooks, which `make fmt` executes
-# via uvx. The key stays because the synced .rhiza/tests/test_pyproject.py asserts a
-# 'lint' group is declared; that assertion is gone in rhiza after #1484, so the key can
-# go on the next template sync.
-lint = []
+# There is no `lint` group: ruff runs through the pre-commit hooks, which `make fmt`
+# executes via uvx, so nothing would resolve such a group. It used to be declared as a
+# literal `lint = []` only because the synced .rhiza/tests/test_pyproject.py asserted its
+# presence; that assertion is gone in rhiza after #1484.
 
 [tool.uv]
 # `default-groups` used to add a "typecheck" group here so `uv run ty check` resolved
