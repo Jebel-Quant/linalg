@@ -61,7 +61,7 @@ All gates run via `make <target>` (never call `.venv/bin/...` directly):
 - `make docs-coverage` — interrogate docstring coverage (100% required)
 - `make deptry` — unused/missing dependency analysis
 - `make security` — pip-audit + bandit
-- `make validate` — check the repo against the Rhiza template
+- `make rhiza-test` — run the Rhiza template's bundled checks under `.rhiza/tests/`
 - `make test` — full pytest suite with the coverage gate (100% line+branch)
 
 ## Conventions
