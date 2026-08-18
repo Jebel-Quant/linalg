@@ -40,9 +40,17 @@ from cvx.linalg.covariance.ewm_cov import ewm_covariance  # requires the 'ewm' e
 
 This is what sets `cvx-linalg` apart from `numpy.linalg`. Financial data arrives
 with gaps: an asset that was not yet listed, a name that stopped trading, a
-covariance estimate that never converged. NumPy propagates a single missing entry
-through the entire result. Every function here instead restricts the computation
-to the valid sub-problem and returns `NaN` only where the input was missing.
+covariance estimate that never converged.
+
+Hand such a matrix to `np.linalg.solve` and you get back nothing you can use.
+LAPACK's pivoting smears the missing entry across the solution, and *how far* it
+spreads depends on the BLAS your NumPy wheel was built against — the same call
+returns `[nan, nan, nan]` under Accelerate on macOS and `[nan, nan, 2.375]` under
+OpenBLAS on Linux. Neither is an answer you can act on.
+
+Every function here instead restricts the computation to the valid sub-problem
+and returns `NaN` only where the input was missing — the same result on every
+platform:
 
 ```python
 import numpy as np
@@ -62,14 +70,12 @@ rhs = np.array([8.0, 1.0, 18.0])
 mask, submatrix = valid(cov)
 print("valid assets     :", mask.tolist())
 print("clean submatrix  :", submatrix.tolist())
-print("numpy.linalg     :", np.linalg.solve(cov, rhs).tolist())
 print("cvx.linalg.solve :", solve(cov, rhs).tolist())
 ```
 
 ```result
 valid assets     : [True, False, True]
 clean submatrix  : [[4.0, 0.0], [0.0, 9.0]]
-numpy.linalg     : [nan, nan, nan]
 cvx.linalg.solve : [2.0, nan, 2.0]
 ```
 
