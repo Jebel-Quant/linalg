@@ -36,6 +36,48 @@ from cvx.linalg import (
 from cvx.linalg.covariance.ewm_cov import ewm_covariance  # requires the 'ewm' extra (polars)
 ```
 
+### Everything is NaN-aware
+
+This is what sets `cvx-linalg` apart from `numpy.linalg`. Financial data arrives
+with gaps: an asset that was not yet listed, a name that stopped trading, a
+covariance estimate that never converged. NumPy propagates a single missing entry
+through the entire result. Every function here instead restricts the computation
+to the valid sub-problem and returns `NaN` only where the input was missing.
+
+```python
+import numpy as np
+
+from cvx.linalg import solve, valid
+
+# A covariance matrix in which the second asset has no usable data.
+cov = np.array(
+    [
+        [4.0, 1.0, 0.0],
+        [1.0, np.nan, 1.0],
+        [0.0, 1.0, 9.0],
+    ]
+)
+rhs = np.array([8.0, 1.0, 18.0])
+
+mask, submatrix = valid(cov)
+print("valid assets     :", mask.tolist())
+print("clean submatrix  :", submatrix.tolist())
+print("numpy.linalg     :", np.linalg.solve(cov, rhs).tolist())
+print("cvx.linalg.solve :", solve(cov, rhs).tolist())
+```
+
+```result
+valid assets     : [True, False, True]
+clean submatrix  : [[4.0, 0.0], [0.0, 9.0]]
+numpy.linalg     : [nan, nan, nan]
+cvx.linalg.solve : [2.0, nan, 2.0]
+```
+
+`valid` reports which rows and columns survive and hands back the clean
+submatrix; `solve` uses that mask internally, solves the 2x2 system for the
+assets that do have data, and marks the missing asset `NaN` rather than
+destroying the other two answers.
+
 Internally the package is organized into subpackages (which can also be
 imported directly, e.g. `from cvx.linalg.decomposition import qr`):
 
