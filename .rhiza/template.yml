@@ -6,7 +6,11 @@ profiles:
 templates:
   - legal
 
+# Paths the template ships but this repo owns outright. Written as destination
+# paths — where the file lands here, not where it sits in the template.
 exclude:
-  - bundles/github/.github/workflows/rhiza_fuzzing.yml
-  - bundles/github/.github/workflows/rhiza_weekly.yml
-  - bundles/github/.github/workflows/rhiza_scorecard.yml
+  - .github/DISCUSSION_TEMPLATE
+  - .github/ISSUE_TEMPLATE
+  - .github/CONFIG.md
+  - .github/workflows/rhiza_mutation.yml
+  - .github/workflows/rhiza_fuzzing.yml
