@@ -1,6 +1,9 @@
 ## Makefile (repo-owned)
 # Keep this file small. It can be edited without breaking template sync.
 
+# Override template default: notebooks live under book/, not the default docs/notebooks
+MARIMO_FOLDER = book/marimo/notebooks
+
 # Override template default: include mkdocstrings plugin for API docs
 MKDOCS_EXTRA_PACKAGES = --with 'mkdocstrings[python]'
 
