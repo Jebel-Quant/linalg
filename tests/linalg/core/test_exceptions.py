@@ -133,7 +133,7 @@ def test_negative_warmup_error_without_value() -> None:
 
 
 # ---------------------------------------------------------------------------
-# exact messages and attributes (mutation-hardening)
+# exact messages and attributes
 # ---------------------------------------------------------------------------
 
 
