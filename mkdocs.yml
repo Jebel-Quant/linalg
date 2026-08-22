@@ -22,7 +22,6 @@ nav:
     - Hypothesis Report: reports/hypothesis/report.html
   - Development:
     - Tests: development/TESTS.md
-    - Mutation Testing: development/MUTATION.md
 
 extra:
   social:
