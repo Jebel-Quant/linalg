@@ -18,7 +18,6 @@ nav:
   - Reports:
     - Test Report: reports/html-report/report.html
     - Coverage Report: reports/html-coverage/index.html
-    - Benchmark Report: reports/benchmarks/report.html
     - Hypothesis Report: reports/hypothesis/report.html
   - Development:
     - Tests: development/TESTS.md
