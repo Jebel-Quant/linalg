@@ -20,7 +20,7 @@ nav:
     - Coverage Report: reports/html-coverage/index.html
     - Hypothesis Report: reports/hypothesis/report.html
   - Development:
-    - Tests: development/TESTS.md
+    - Rhiza: development/rhiza.md
 
 extra:
   social:
