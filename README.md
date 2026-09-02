@@ -29,9 +29,20 @@ you ever need:
 
 ```python
 from cvx.linalg import (
-    a_norm, cholesky, cholesky_solve, cov_to_corr,
-    inv, inv_a_norm, is_positive_definite, lstsq, pca, rand_cov, solve, valid,
-    GramOperator, bordered_solve,
+    a_norm,
+    cholesky,
+    cholesky_solve,
+    cov_to_corr,
+    inv,
+    inv_a_norm,
+    is_positive_definite,
+    lstsq,
+    pca,
+    rand_cov,
+    solve,
+    valid,
+    GramOperator,
+    bordered_solve,
 )
 from cvx.linalg.covariance.ewm_cov import ewm_covariance  # requires the 'ewm' extra (polars)
 ```
