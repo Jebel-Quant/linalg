@@ -110,7 +110,14 @@ typechecker = "both"
 # `pytest-rhiza==$(RHIZA_CHECKS_VERSION)` from PyPI. The CLI's default names a git tag at
 # v0.2.0, so the deletion *downgraded* the conformance checks -- the drift the pin exists to
 # prevent. Pinned exactly rather than floored: a gate that moves under you is not a gate.
-pytest-rhiza = "pytest-rhiza==0.2.1"
+#
+# 0.6.0 is required by this repo's dynamic [project].version, not merely available: it is
+# the first release whose test_pyproject accepts a version derived from the VCS. Under
+# 0.2.1 three of its assertions read `[project].version` as the empty string and fail --
+# the required-field check, the semver shape, and the tag-agreement one -- because they
+# predate `dynamic = ["version"]` being a thing a rhiza project could do. 0.6.0 skips each
+# with a reason instead. jquantstats, which made this move first, pins the same version.
+pytest-rhiza = "pytest-rhiza==0.6.0"
 
 # The deleted `Makefile` set `MARIMO_FOLDER = book/marimo/notebooks`; the CLI defaults to
 # `docs/notebooks`, which is not where this repo keeps its notebooks. rhiza_marimo.yml reads
