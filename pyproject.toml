@@ -126,12 +126,14 @@ pytest-rhiza = "pytest-rhiza==0.6.0"
 # notebooks -- both of which look like success.
 marimo-folder = "book/marimo/notebooks"
 
+# The make layer never overrode python.mk's 90, and the CLI default is also 90, but CLAUDE.md
+# documents a 100% line+branch gate and [tool.check_test_layout]'s `reason` relies on it. The
+# suite already sits at 100%, so the gate is raised to match rather than the docs lowered.
+# `test` passes this as --cov-fail-under on the command line, which outranks any config file.
+# (The `fail-under = 100` below is [tool.interrogate]'s docstring gate, a different thing.)
+coverage-fail-under = 100
+
 # Not set, on purpose:
-#   coverage-fail-under  -- the make layer never overrode python.mk's 90, and `test` passed
-#                           --cov-fail-under on the command line, which outranks any config
-#                           file, so 90 is what this repo has always enforced. The CLI default
-#                           is also 90: unchanged, not lost. (The `fail-under = 100` below is
-#                           [tool.interrogate]'s docstring gate, a different thing.)
 #   mkdocs-extra-packages -- the Makefile carried only `--with 'mkdocstrings[python]'`, which
 #                           rhiza-task now makes the default.
 #   source-folder, ci-os-matrix, layers -- already the defaults.
