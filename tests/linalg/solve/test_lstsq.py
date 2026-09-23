@@ -48,9 +48,9 @@ def test_lstsq_nan_rhs_filtered() -> None:
     mat = np.array([[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]])
     b = np.array([2.0, np.nan, 3.0])
     x, _, rank, _ = lstsq(mat, b)
-    # Row 1 dropped → least-squares on rows 0 and 2.
-    assert np.isfinite(x).all()
-    assert rank > 0
+    # Row 1 dropped → rows 0 and 2 form an exactly determined system.
+    np.testing.assert_allclose(x, np.array([2.0, 1.0]), atol=1e-12)
+    assert rank == 2
 
 
 def test_lstsq_all_nan_rows_returns_nan_solution() -> None:
