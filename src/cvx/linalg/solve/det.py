@@ -14,7 +14,7 @@ _SENTINEL = float("nan")
 
 def det(
     matrix: Matrix,
-    cond_threshold: float = DEFAULT_COND_THRESHOLD,
+    cond_threshold: float | None = DEFAULT_COND_THRESHOLD,
 ) -> float:
     """Return the determinant of a square matrix.
 
@@ -26,7 +26,8 @@ def det(
     Args:
         matrix: Square input matrix.
         cond_threshold: Condition-number threshold above which a warning is
-            emitted. Defaults to ``1e12``.
+            emitted. Defaults to ``1e12``. ``None`` skips the check, and the
+            SVD that computes the condition number, entirely.
 
     Returns:
         The determinant of the valid sub-matrix, or ``nan`` when no valid

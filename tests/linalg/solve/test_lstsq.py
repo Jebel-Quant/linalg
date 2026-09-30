@@ -156,3 +156,12 @@ def test_lstsq_zero_columns_has_unit_condition_number() -> None:
     assert x.size == 0
     assert rank == 0
     assert sv.size == 0
+
+
+def test_lstsq_none_threshold_never_warns() -> None:
+    """``cond_threshold=None`` emits no warning even for an ill-conditioned matrix."""
+    matrix = np.diag([1.0, 1e-14])
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", IllConditionedMatrixWarning)
+        x, *_ = lstsq(matrix, np.array([1.0, 1e-14]), cond_threshold=None)
+    np.testing.assert_allclose(x, [1.0, 1.0])

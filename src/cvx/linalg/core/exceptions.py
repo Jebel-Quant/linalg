@@ -210,12 +210,12 @@ def cond(matrix: Matrix, p: int | float | Literal["fro", "nuc"] | None = None) -
     return float(np.linalg.cond(matrix, p=p))
 
 
-def warn_ill_conditioned(cond_value: float, threshold: float, stacklevel: int = 3) -> None:
+def warn_ill_conditioned(cond_value: float, threshold: float | None, stacklevel: int = 3) -> None:
     """Emit IllConditionedMatrixWarning when *cond_value* exceeds *threshold*.
 
     Args:
         cond_value: Condition number to compare against the threshold.
-        threshold: Upper bound before a warning is issued.
+        threshold: Upper bound before a warning is issued, or ``None`` to never warn.
         stacklevel: Stack level passed to :func:`warnings.warn` so the warning
             points at the caller of the public API. Defaults to ``3``.
 
@@ -227,7 +227,7 @@ def warn_ill_conditioned(cond_value: float, threshold: float, stacklevel: int = 
         ...     len(w)
         1
     """
-    if cond_value > threshold:
+    if threshold is not None and cond_value > threshold:
         warnings.warn(
             f"Matrix condition number {cond_value:.3e} exceeds threshold {threshold:.3e}; "
             "results may be numerically unreliable.",
@@ -236,12 +236,13 @@ def warn_ill_conditioned(cond_value: float, threshold: float, stacklevel: int = 
         )
 
 
-def check_and_warn_condition(matrix: Matrix, threshold: float) -> None:
+def check_and_warn_condition(matrix: Matrix, threshold: float | None) -> None:
     """Emit IllConditionedMatrixWarning when the condition number exceeds threshold.
 
     Args:
         matrix: Square matrix whose condition number is checked.
-        threshold: Upper bound before a warning is issued.
+        threshold: Upper bound before a warning is issued, or ``None`` to skip
+            the check, and the SVD it costs, entirely.
 
     Example:
         >>> import numpy as np
@@ -252,4 +253,6 @@ def check_and_warn_condition(matrix: Matrix, threshold: float) -> None:
         ...     len(w)
         1
     """
+    if threshold is None:
+        return
     warn_ill_conditioned(cond(matrix), threshold, stacklevel=4)

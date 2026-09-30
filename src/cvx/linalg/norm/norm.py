@@ -95,7 +95,7 @@ def a_norm(vector: Vector, matrix: Matrix | None = None) -> float:
 def inv_a_norm(
     vector: Vector,
     matrix: Matrix | None = None,
-    cond_threshold: float = DEFAULT_COND_THRESHOLD,
+    cond_threshold: float | None = DEFAULT_COND_THRESHOLD,
 ) -> float:
     """Calculate the inverse A-norm of a vector using an optional matrix.
 
@@ -110,7 +110,8 @@ def inv_a_norm(
         vector: The input vector.
         matrix: Optional square matrix defining the quadratic form.
         cond_threshold: Condition-number threshold above which a warning is
-            emitted. Defaults to ``1e12``.
+            emitted. Defaults to ``1e12``. ``None`` skips the check, and the
+            SVD that computes the condition number, entirely.
 
     Returns:
         The Euclidean norm of the finite vector entries, or

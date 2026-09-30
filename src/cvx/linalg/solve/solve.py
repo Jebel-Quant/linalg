@@ -21,7 +21,7 @@ from ..decomposition.cholesky import cholesky_solve as _cholesky_solve
 def solve(
     matrix: Matrix,
     rhs: Vector | Matrix,
-    cond_threshold: float = DEFAULT_COND_THRESHOLD,
+    cond_threshold: float | None = DEFAULT_COND_THRESHOLD,
 ) -> Vector | Matrix:
     """Solve a linear system restricted to the valid submatrix.
 
@@ -36,7 +36,8 @@ def solve(
         matrix: Square coefficient matrix of shape ``(n, n)``.
         rhs: Right-hand side vector of length ``n`` or matrix of shape ``(n, k)``.
         cond_threshold: Condition-number threshold above which a warning is
-            emitted. Defaults to ``1e12``.
+            emitted. Defaults to ``1e12``. ``None`` skips the check, and the
+            SVD that computes the condition number, entirely.
 
     Returns:
         A solution array with the same shape as ``rhs``. Entries mapped to
