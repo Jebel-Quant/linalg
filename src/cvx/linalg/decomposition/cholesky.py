@@ -110,7 +110,7 @@ def _factored_solver(cov: Matrix) -> Callable[[Vector | Matrix], Vector | Matrix
         solution of the same shape.
     """
     try:
-        if _HAVE_SCIPY:
+        if _HAVE_SCIPY and cov.shape[0]:  # older SciPy's cho_solve rejects a 0 x 0 factor
             factor = _cho_factor(cov)
             # cho_factor has already checked cov; skipping the rhs scan lets NaNs propagate.
             return lambda rhs: cast("Vector | Matrix", _cho_solve(factor, rhs, check_finite=False))

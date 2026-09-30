@@ -5,8 +5,10 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+import cvx.linalg.operators.dense as dense_module
 from cvx.linalg import (
     DenseOperator,
+    DimensionMismatchError,
     IncrementalDenseOperator,
     NonSquareMatrixError,
     NotAMatrixError,
@@ -161,3 +163,100 @@ def test_incremental_delete_bad_pivot_falls_back() -> None:
     free = np.array([0])  # delete 1 -> pivot -1 -> bad pivot -> refactor
     rhs = rng.standard_normal(1)
     assert np.allclose(inc.solve_free(free, rhs), ref.solve_free(free, rhs))
+
+
+def _spd(n: int, seed: int) -> np.ndarray:
+    """Return a well-conditioned random symmetric positive-definite matrix."""
+    b = np.random.default_rng(seed).standard_normal((n, n))
+    return b @ b.T + n * np.eye(n)
+
+
+@pytest.mark.parametrize("have_scipy", [True, False])
+def test_incremental_long_sweep_matches_dense(monkeypatch: pytest.MonkeyPatch, have_scipy: bool) -> None:
+    """A long random insert/delete sweep tracks fresh solves on both the BLAS and the NumPy path."""
+    monkeypatch.setattr(dense_module, "_HAVE_SCIPY", have_scipy)
+    rng = np.random.default_rng(29)
+    a = _spd(30, 29)
+    inc = IncrementalDenseOperator(a)
+    ref = DenseOperator(a)
+    free: list[int] = []
+    for _ in range(200):
+        out = [i for i in range(30) if i not in free]
+        if free and (not out or rng.random() < 0.4):
+            free.remove(free[rng.integers(len(free))])  # delete from any slot, the last one included
+        else:
+            free.append(out[rng.integers(len(out))])
+        idx = np.array(sorted(free), dtype=int)
+        rhs = rng.standard_normal((idx.size, 2))
+        np.testing.assert_allclose(inc.solve_free(idx, rhs), ref.solve_free(idx, rhs), atol=1e-10)
+
+
+def test_incremental_accepts_unsorted_free_indices() -> None:
+    """Free indices may come in any order; rhs and the solution follow that order."""
+    rng = np.random.default_rng(30)
+    a = _spd(8, 30)
+    inc = IncrementalDenseOperator(a)
+    ref = DenseOperator(a)
+    for fs in ([5, 1, 3], [5, 1, 3, 0], [0, 3, 5], [7, 0, 5, 3]):
+        free = np.array(fs)
+        rhs = rng.standard_normal(len(fs))
+        assert np.allclose(inc.solve_free(free, rhs), ref.solve_free(free, rhs))
+
+
+def test_incremental_normalises_negative_indices() -> None:
+    """Negative indices name the same entries as their non-negative counterparts."""
+    a = _spd(5, 31)
+    inc = IncrementalDenseOperator(a)
+    rhs = np.array([1.0, 2.0])
+    expected = DenseOperator(a).solve_free(np.array([1, 4]), rhs)
+    assert np.allclose(inc.solve_free(np.array([1, -1]), rhs), expected)
+    assert np.allclose(inc.solve_free(np.array([1, 4]), rhs), expected)
+
+
+def test_incremental_out_of_range_index_raises() -> None:
+    """An index outside the operator raises IndexError, as for DenseOperator."""
+    with pytest.raises(IndexError):
+        IncrementalDenseOperator(np.eye(3)).solve_free(np.array([0, 3]), np.ones(2))
+
+
+@pytest.mark.parametrize("rhs", [np.ones(3), np.float64(1.0)])
+def test_incremental_rhs_length_mismatch_raises(rhs: np.ndarray) -> None:
+    """A right-hand side not aligned to the free set is rejected rather than broadcast."""
+    with pytest.raises(DimensionMismatchError):
+        IncrementalDenseOperator(np.eye(3)).solve_free(np.array([0, 1]), rhs)
+
+
+def test_incremental_unchanged_free_set_reuses_inverse(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Solving twice on the same free set reuses the cached inverse without refactorising."""
+    a = _spd(6, 32)
+    inc = IncrementalDenseOperator(a)
+    free = np.array([0, 2, 4])
+    inc.solve_free(free, np.ones(3))
+
+    def fail(_cur: np.ndarray) -> None:
+        """Stand in for ``_refactor``; any call fails the test."""
+        raise AssertionError("refactorised an unchanged free set")  # noqa: TRY003
+
+    monkeypatch.setattr(inc, "_refactor", fail)
+    rhs = np.array([1.0, -2.0, 0.5])
+    assert np.allclose(inc.solve_free(free, rhs), DenseOperator(a).solve_free(free, rhs))
+
+
+def test_incremental_singular_refactor_keeps_cache() -> None:
+    """A refactorisation that raises leaves the previous cache usable."""
+    a = np.ones((2, 2))  # singular; the 1x1 blocks are fine
+    inc = IncrementalDenseOperator(a)
+    inc.solve_free(np.array([0]), np.array([2.0]))
+    with pytest.raises(np.linalg.LinAlgError):
+        inc.solve_free(np.array([0, 1]), np.ones(2))  # Schur complement 0 -> refactor -> singular
+    assert np.allclose(inc.solve_free(np.array([0]), np.array([2.0])), [2.0])
+
+
+def test_incremental_jump_to_empty_free_set() -> None:
+    """Dropping several indices at once down to an empty free set refactorises cleanly."""
+    a = _spd(4, 33)
+    inc = IncrementalDenseOperator(a)
+    inc.solve_free(np.array([0, 1, 2]), np.ones(3))
+    assert inc.solve_free(np.array([], dtype=int), np.array([])).shape == (0,)
+    rhs = np.array([1.0, 2.0])
+    assert np.allclose(inc.solve_free(np.array([1, 3]), rhs), DenseOperator(a).solve_free(np.array([1, 3]), rhs))
