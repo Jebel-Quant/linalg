@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com),
 and entries are generated from [Conventional Commits](https://www.conventionalcommits.org).
 
+## [1.1.1] - 2026-09-30
+
+### Performance
+- Screen the condition check with a LAPACK estimate before the SVD (#179) (#185)
+- *(operators)* Update IncrementalDenseOperator's inverse in place (#186)
+
 ## [1.1.0] - 2026-09-30
 
 ### New Features
