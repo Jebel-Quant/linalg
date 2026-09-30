@@ -5,6 +5,90 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com),
 and entries are generated from [Conventional Commits](https://www.conventionalcommits.org).
 
+## [1.1.0] - 2026-09-30
+
+### New Features
+- Allow cond_threshold=None to skip the condition-number check (#181)
+
+### Bug Fixes
+- Mark package Production/Stable to match 1.0.0 (#113) (#115)
+- Declare a discoverable bumpversion config in pyproject.toml (#125)
+- Point the cholesky rhs deprecation at 2.0 instead of the shipped 1.0 (#130)
+- Enforce the documented 100% coverage gate (#171) (#174)
+- *(cholesky)* Solve with the factor, not two general LU solves (#178)
+
+### Documentation
+- Add root CLAUDE.md documenting owner split (#106)
+- Replace stale `make validate` with `make rhiza-test` in CLAUDE.md (#141)
+- Add a verified NaN-aware quickstart to the README (#146)
+- Write README examples as pycon doctests (#177)
+- Document cond_threshold=None in the README (#182)
+
+### Performance
+- Reuse factorisations; fix NaN rhs regression from #178 (#180)
+
+### Dependencies
+- *(deps)* Prune [dependency-groups] to what the environment actually needs (#133)
+- *(deps)* Prune [dependency-groups] to what the environment needs, and drop `lint` (#134)
+
+### Maintenance
+- Chore(deps)(deps): bump docker/login-action in the github-actions group (#94)
+- Chore(deps-dev)(deps-dev): bump the python-dependencies group with 2 updates (#95)
+- Update rhiza to v1.1.1 (#101)
+- Add SupportsMatvec protocol and extract validation helpers (#102)
+- Update rhiza to v1.1.2 (#103)
+- Update rhiza to v1.1.3 (#104)
+- Chore(deps-dev)(deps-dev): bump the python-dependencies group with 5 updates (#107)
+- Exclude fuzzing, scorecard, and weekly workflows from sync (#108)
+- Update rhiza to v1.2.1 (#109)
+- Mirror tests one-file-per-source-module (#110, #111) (#112)
+- Chore(deps-dev)(deps-dev): bump the python-dependencies group with 4 updates (#117)
+- Chore(deps)(deps): bump the github-actions group with 10 updates (#116)
+- *(pyproject)* Modernize Python version and license metadata (#118)
+- Chore(deps-dev)(deps-dev): bump the python-dependencies group with 6 updates (#120)
+- Chore(deps)(deps): bump docker/login-action in the github-actions group (#119)
+- Update rhiza to v1.2.5 (#121)
+- Update rhiza to v1.3.0 (#124)
+- Make the shared operator helpers public within base.py (#129)
+- Chore(deps)(deps): bump the github-actions group with 3 updates (#131)
+- Chore(deps-dev)(deps-dev): bump the python-dependencies group with 4 updates (#132)
+- Update rhiza to v1.3.2 (#135)
+- *(ci)* Bump the rhiza pin to v1.3.3 (#138)
+- Chore(deps-dev)(deps-dev): bump the python-dependencies group with 2 updates (#137)
+- Chore(deps)(deps): bump the github-actions group with 2 updates (#136)
+- Update rhiza to v1.3.3 (#139)
+- Chore(deps-dev)(deps-dev): bump hypothesis (#142)
+- Update rhiza to v1.3.4 (#143)
+- Remove .rhiza/.env and .rhiza/.gitignore (#147)
+- Update rhiza to v1.4.2 (#148)
+- Update rhiza to v1.4.2 (#150)
+- Update rhiza to v1.5.0 (#151)
+- Remove stale template-owned files that v1.5.0 dropped (#152)
+- Prune exclude entries the template no longer ships (#153)
+- Remove mutation testing (#154)
+- Drop the exclude entries for the retired mutation/fuzzing workflows (#155)
+- Update rhiza to v1.6.0 (#156)
+- Chore(deps-dev)(deps-dev): bump the python-dependencies group with 2 updates (#157)
+- Update rhiza to v1.7.1 (#158)
+- Chore(deps-dev)(deps-dev): bump polars in the python-dependencies group (#159)
+- Update rhiza to v1.7.2 (#160)
+- Chore(deps-dev)(deps-dev): bump hypothesis (#161)
+- Update rhiza to v1.8.0 (#163)
+- Derive the version from the git tag (#164)
+- Chore(deps-dev)(deps-dev): bump the python-dependencies group with 3 updates (#165)
+- Chore(deps)(deps): bump starlette from 1.2.0 to 1.3.1 (#167)
+- Chore(deps)(deps): bump anyio from 4.13.0 to 4.14.2 (#169)
+- Chore(deps)(deps): bump python-multipart from 0.0.29 to 0.0.31 (#168)
+- Chore(deps)(deps): bump pymdown-extensions from 10.21.3 to 11.0.1 (#166)
+- Chore(deps-dev)(deps-dev): bump pandas in the python-dependencies group (#170)
+- Assert exact solution in test_lstsq_nan_rhs_filtered (#172) (#173)
+- Chore(deps-dev)(deps-dev): bump the python-dependencies group with 2 updates (#175)
+- Update rhiza to v1.9.0 (#176)
+
+### Other Changes
+- Declare the deliberate test-layout deviations in pyproject.toml (#123)
+- Modify excluded paths in template.yml (#149)
+
 ## [1.0.0] - 2026-07-07
 
 ### Documentation
