@@ -211,3 +211,23 @@ def test_check_and_warn_condition_silent_when_well_conditioned() -> None:
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         check_and_warn_condition(np.eye(2), 2.0)
+
+
+def test_warn_ill_conditioned_none_threshold_never_warns() -> None:
+    """A ``None`` threshold disables the warning whatever the condition number."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", IllConditionedMatrixWarning)
+        warn_ill_conditioned(math.inf, None)
+
+
+def test_check_and_warn_condition_none_threshold_skips_cond(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A ``None`` threshold returns before computing the condition number."""
+
+    def fail(*_args: object) -> float:
+        """Stand in for ``cond``; any call fails the test."""
+        raise AssertionError("cond() called despite threshold=None")  # noqa: TRY003
+
+    monkeypatch.setattr("cvx.linalg.core.exceptions.cond", fail)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", IllConditionedMatrixWarning)
+        check_and_warn_condition(np.diag([1.0, 1e-14]), None)

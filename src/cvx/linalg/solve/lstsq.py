@@ -26,7 +26,7 @@ def _condition_number(sv: npt.NDArray[np.floating]) -> float:
 def lstsq(
     matrix: Matrix,
     rhs: Vector,
-    cond_threshold: float = DEFAULT_COND_THRESHOLD,
+    cond_threshold: float | None = DEFAULT_COND_THRESHOLD,
 ) -> tuple[Vector, Vector, int, Vector]:
     """Solve an overdetermined or underdetermined system in the least-squares sense.
 
@@ -40,7 +40,7 @@ def lstsq(
         matrix: Coefficient matrix of shape ``(m, n)``.
         rhs: Right-hand side vector of length ``m``.
         cond_threshold: Condition-number threshold above which a warning is
-            emitted. Defaults to ``1e12``.
+            emitted. Defaults to ``1e12``. ``None`` skips the check.
 
     Returns:
         A four-tuple ``(x, residuals, rank, sv)`` matching the convention of

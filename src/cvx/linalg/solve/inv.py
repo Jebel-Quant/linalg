@@ -18,7 +18,7 @@ from ..core.valid import valid
 
 def inv(
     matrix: Matrix,
-    cond_threshold: float = DEFAULT_COND_THRESHOLD,
+    cond_threshold: float | None = DEFAULT_COND_THRESHOLD,
 ) -> Matrix:
     """Invert a matrix restricted to the valid submatrix.
 
@@ -30,7 +30,8 @@ def inv(
     Args:
         matrix: Square matrix to invert.
         cond_threshold: Condition-number threshold above which a warning is
-            emitted. Defaults to ``1e12``.
+            emitted. Defaults to ``1e12``. ``None`` skips the check, and the
+            SVD that computes the condition number, entirely.
 
     Returns:
         An inverted matrix with the same shape as *matrix*. Rows and columns

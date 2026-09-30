@@ -75,3 +75,18 @@ def test_det_non_square_raises_exact_message() -> None:
     """det() reports the actual (rows, cols) of a non-square input."""
     with pytest.raises(NonSquareMatrixError, match=re.escape("Matrix must be square, got shape (2, 3).")):
         det(np.ones((2, 3)))
+
+
+def test_det_none_threshold_skips_condition_check(monkeypatch: pytest.MonkeyPatch) -> None:
+    """``cond_threshold=None`` emits no warning and never computes the condition number."""
+
+    def fail(*_args: object) -> float:
+        """Stand in for ``cond``; any call fails the test."""
+        raise AssertionError("cond() called despite cond_threshold=None")  # noqa: TRY003
+
+    monkeypatch.setattr("cvx.linalg.core.exceptions.cond", fail)
+    matrix = np.diag([1.0, 1e-14])  # condition number 1e14, above the default threshold
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", IllConditionedMatrixWarning)
+        result = det(matrix, cond_threshold=None)
+    assert result == pytest.approx(1e-14)
