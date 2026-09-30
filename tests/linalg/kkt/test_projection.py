@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import importlib
+
 import numpy as np
 import pytest
 
@@ -78,3 +80,32 @@ def test_affine_projection_rejects_length_mismatch() -> None:
     """The target must have one entry per constraint row."""
     with pytest.raises(DimensionMismatchError):
         AffineProjection(np.ones((2, 4)), np.zeros(3))
+
+
+def test_affine_projection_factorises_gram_once(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The Gram matrix is factorised on the first projection and reused afterwards."""
+    module = importlib.import_module("cvx.linalg.kkt.projection")
+    calls = 0
+    real = module._factored_solver
+
+    def counting(gram: np.ndarray) -> object:
+        """Count factorisations, then delegate to the real helper."""
+        nonlocal calls
+        calls += 1
+        return real(gram)
+
+    monkeypatch.setattr(module, "_factored_solver", counting)
+    rng = np.random.default_rng(8)
+    c = rng.standard_normal((3, 7))
+    d = rng.standard_normal(3)
+    proj = AffineProjection(c, d)
+    assert calls == 0  # nothing factorised at construction
+    for _ in range(3):
+        assert np.allclose(c @ proj.project(rng.standard_normal(7)), d)
+    assert calls == 1
+
+
+def test_affine_projection_propagates_nan() -> None:
+    """A NaN in C yields a NaN projection rather than an error."""
+    proj = AffineProjection(np.array([[1.0, np.nan, 1.0]]), np.array([1.0]))
+    assert np.all(np.isnan(proj.project(np.ones(3))))

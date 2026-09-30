@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from typing import cast
+
 import numpy as np
 
 from ..core.exceptions import DimensionMismatchError, NotAMatrixError
 from ..core.types import Matrix, Vector
+from ..decomposition.cholesky import _factored_solver
 
 
 class AffineProjection:
@@ -17,9 +21,9 @@ class AffineProjection:
     ``P(x) = x - C.T @ (C C.T)^{-1} @ (C x - d)``.
 
     The Gram matrix ``C C.T`` is formed once at construction (the ``O(mc**2 * n)``
-    cost) and reused, so repeated projections -- for instance an alternating
-    box / affine projection loop -- pay only an ``mc x mc`` solve each. ``C`` should
-    have full row rank.
+    cost) and factorised on the first projection, so repeated projections -- for
+    instance an alternating box / affine projection loop -- pay only ``O(mc**2)``
+    triangular solves each (with SciPy installed). ``C`` should have full row rank.
 
     Args:
         c: Constraint matrix ``C`` of shape ``(mc, n)``.
@@ -47,6 +51,7 @@ class AffineProjection:
         self._c = c
         self._d = d
         self._gram = c @ c.T
+        self._solve_gram: Callable[[Vector | Matrix], Vector | Matrix] | None = None
 
     @property
     def m(self) -> int:
@@ -70,5 +75,19 @@ class AffineProjection:
         x = np.asarray(x, dtype=np.float64)
         target = self._d if x.ndim == 1 else self._d[:, None]
         residual = self._c @ x - target
-        correction = self._c.T @ np.linalg.solve(self._gram, residual)
+        correction = self._c.T @ self._gram_solver()(residual)
         return x - correction
+
+    def _gram_solver(self) -> Callable[[Vector | Matrix], Vector | Matrix]:
+        """Return the solver for ``C C.T``, factorising it on first use.
+
+        A non-finite Gram matrix skips the factorisation and is LU-solved per
+        call, so NaNs in ``C`` propagate to the projection as before.
+        """
+        if self._solve_gram is None:
+            if np.all(np.isfinite(self._gram)):
+                self._solve_gram = _factored_solver(self._gram)
+            else:
+                gram = self._gram
+                self._solve_gram = lambda rhs: cast("Vector | Matrix", np.linalg.solve(gram, rhs))
+        return self._solve_gram
