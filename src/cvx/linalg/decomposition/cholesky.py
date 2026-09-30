@@ -10,6 +10,14 @@ from numpy.linalg import cholesky as _cholesky
 
 from ..core.types import Matrix, Vector
 
+try:  # SciPy's triangular solves keep a factored solve at O(n^2) per right-hand side.
+    from scipy.linalg import cho_factor as _cho_factor  # type: ignore[import-untyped]
+    from scipy.linalg import cho_solve as _cho_solve
+
+    _HAVE_SCIPY = True
+except ImportError:  # pragma: no cover - depends on the environment; the fallback is tested by patching the flag
+    _HAVE_SCIPY = False
+
 
 def cholesky(cov: Matrix, rhs: Vector | Matrix | None = None) -> Vector | Matrix:
     """Compute the upper triangular Cholesky factor of a covariance matrix.
@@ -57,7 +65,10 @@ def cholesky_solve(cov: Matrix, rhs: Vector | Matrix) -> Vector | Matrix:
 
     The Cholesky factorisation is attempted first for numerical stability;
     when *cov* is not positive-definite the solve falls back to LU
-    decomposition.
+    decomposition. With SciPy installed (the ``scipy`` extra) the factor is
+    applied by two triangular solves, so the whole solve costs one
+    factorisation. Without it, NumPy has no triangular solve, and a successful
+    Cholesky is followed by a single LU solve.
 
     Args:
         cov: A positive definite covariance matrix of shape (n, n).
@@ -78,8 +89,10 @@ def cholesky_solve(cov: Matrix, rhs: Vector | Matrix) -> Vector | Matrix:
         [2.0, 3.0]
     """
     try:
-        upper = _cholesky(cov).transpose()
-        return cast("Vector | Matrix", np.linalg.solve(upper, np.linalg.solve(upper.T, rhs)))
+        if _HAVE_SCIPY:
+            return cast("Vector | Matrix", _cho_solve(_cho_factor(cov), rhs))
+        _cholesky(cov)  # raises LinAlgError unless cov is positive-definite
+        return cast("Vector | Matrix", np.linalg.solve(cov, rhs))
     except np.linalg.LinAlgError:
         return cast("Vector | Matrix", np.linalg.solve(cov, rhs))
 

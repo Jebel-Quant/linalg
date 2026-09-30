@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import importlib
 import re
 
 import numpy as np
@@ -136,3 +137,26 @@ def test_cholesky_solve_non_pd_falls_back_to_lu() -> None:
     matrix = np.array([[1.0, 0.0], [0.0, -1.0]])
     rhs = np.array([2.0, -3.0])
     np.testing.assert_allclose(cholesky_solve(matrix, rhs), np.array([2.0, 3.0]))
+
+
+@pytest.mark.parametrize("have_scipy", [True, False])
+def test_cholesky_solve_both_paths(monkeypatch: pytest.MonkeyPatch, have_scipy: bool) -> None:
+    """The SciPy triangular path and the NumPy-only path solve the same PD system."""
+    module = importlib.import_module("cvx.linalg.decomposition.cholesky")
+
+    monkeypatch.setattr(module, "_HAVE_SCIPY", have_scipy)
+    rng = np.random.default_rng(3)
+    a = rng.standard_normal((6, 6))
+    matrix = a @ a.T + 6 * np.eye(6)
+    rhs = rng.standard_normal((6, 2))
+    np.testing.assert_allclose(matrix @ module.cholesky_solve(matrix, rhs), rhs, atol=1e-10)
+
+
+@pytest.mark.parametrize("have_scipy", [True, False])
+def test_cholesky_solve_both_paths_fall_back_to_lu(monkeypatch: pytest.MonkeyPatch, have_scipy: bool) -> None:
+    """Either path falls back to LU for an indefinite matrix."""
+    module = importlib.import_module("cvx.linalg.decomposition.cholesky")
+
+    monkeypatch.setattr(module, "_HAVE_SCIPY", have_scipy)
+    matrix = np.array([[1.0, 0.0], [0.0, -1.0]])
+    np.testing.assert_allclose(module.cholesky_solve(matrix, np.array([2.0, -3.0])), np.array([2.0, 3.0]))
