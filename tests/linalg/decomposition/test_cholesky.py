@@ -170,3 +170,15 @@ def test_cholesky_solve_propagates_nan_rhs(monkeypatch: pytest.MonkeyPatch, have
     monkeypatch.setattr(module, "_HAVE_SCIPY", have_scipy)
     matrix = np.array([[4.0, 2.0], [2.0, 5.0]])
     assert np.all(np.isnan(module.cholesky_solve(matrix, np.array([np.nan, 1.0]))))
+
+
+@pytest.mark.parametrize("have_scipy", [True, False])
+@pytest.mark.parametrize("rhs_shape", [(0,), (0, 2)])
+def test_cholesky_solve_empty_system(
+    monkeypatch: pytest.MonkeyPatch, have_scipy: bool, rhs_shape: tuple[int, ...]
+) -> None:
+    """A 0 x 0 system returns an empty solution on either path (older SciPy's cho_solve rejects it)."""
+    module = importlib.import_module("cvx.linalg.decomposition.cholesky")
+
+    monkeypatch.setattr(module, "_HAVE_SCIPY", have_scipy)
+    assert module.cholesky_solve(np.zeros((0, 0)), np.zeros(rhs_shape)).shape == rhs_shape
