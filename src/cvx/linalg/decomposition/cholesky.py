@@ -112,7 +112,8 @@ def _factored_solver(cov: Matrix) -> Callable[[Vector | Matrix], Vector | Matrix
     try:
         if _HAVE_SCIPY:
             factor = _cho_factor(cov)
-            return lambda rhs: cast("Vector | Matrix", _cho_solve(factor, rhs))
+            # cho_factor has already checked cov; skipping the rhs scan lets NaNs propagate.
+            return lambda rhs: cast("Vector | Matrix", _cho_solve(factor, rhs, check_finite=False))
         _cholesky(cov)  # raises LinAlgError unless cov is positive-definite
     except np.linalg.LinAlgError:
         pass

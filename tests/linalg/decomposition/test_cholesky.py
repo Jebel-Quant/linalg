@@ -160,3 +160,13 @@ def test_cholesky_solve_both_paths_fall_back_to_lu(monkeypatch: pytest.MonkeyPat
     monkeypatch.setattr(module, "_HAVE_SCIPY", have_scipy)
     matrix = np.array([[1.0, 0.0], [0.0, -1.0]])
     np.testing.assert_allclose(module.cholesky_solve(matrix, np.array([2.0, -3.0])), np.array([2.0, 3.0]))
+
+
+@pytest.mark.parametrize("have_scipy", [True, False])
+def test_cholesky_solve_propagates_nan_rhs(monkeypatch: pytest.MonkeyPatch, have_scipy: bool) -> None:
+    """A NaN in the right-hand side yields NaNs rather than an error on either path."""
+    module = importlib.import_module("cvx.linalg.decomposition.cholesky")
+
+    monkeypatch.setattr(module, "_HAVE_SCIPY", have_scipy)
+    matrix = np.array([[4.0, 2.0], [2.0, 5.0]])
+    assert np.all(np.isnan(module.cholesky_solve(matrix, np.array([np.nan, 1.0]))))
