@@ -113,8 +113,8 @@ requires the optional `polars` dependency.
 
 - **[`valid(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/core/valid.py)** — Return a boolean mask and valid submatrix by removing rows/columns with non-finite diagonal entries
 - **[`cond(matrix, p=None)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/core/exceptions.py)** — Condition number of a matrix (NaN-aware); accepts the same `p` norm values as `numpy.linalg.cond`
-- **[`check_and_warn_condition(matrix, threshold)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/core/exceptions.py)** — Emit `IllConditionedMatrixWarning` when the condition number exceeds the threshold
-- **[`warn_ill_conditioned(cond_value, threshold)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/core/exceptions.py)** — Emit `IllConditionedMatrixWarning` for an already-computed condition number
+- **[`check_and_warn_condition(matrix, threshold)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/core/exceptions.py)** — Emit `IllConditionedMatrixWarning` when the condition number exceeds the threshold; `threshold=None` skips the check (and its SVD) entirely
+- **[`warn_ill_conditioned(cond_value, threshold)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/core/exceptions.py)** — Emit `IllConditionedMatrixWarning` for an already-computed condition number; `threshold=None` never warns
 - **`DEFAULT_COND_THRESHOLD`** — Default condition-number threshold (`1e12`) used by the ill-conditioning checks
 
 ### Types
@@ -161,9 +161,15 @@ All exceptions and warnings live in [`core/exceptions.py`](https://github.com/Je
 
 - **[`norm(x, ord=None)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/norm/norm.py)** — Norm of a vector or matrix, ignoring non-finite entries; supports all `ord` values of `np.linalg.norm`
 - **[`a_norm(vector, matrix=None)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/norm/norm.py)** — Euclidean norm or NaN-aware matrix norm
-- **[`inv_a_norm(vector, matrix=None)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/norm/norm.py)** — Euclidean norm or inverse NaN-aware matrix norm
+- **[`inv_a_norm(vector, matrix=None, cond_threshold=1e12)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/norm/norm.py)** — Euclidean norm or inverse NaN-aware matrix norm
 
 ## Solvers (`cvx.linalg.solve`)
+
+`solve`, `inv`, `det` (and `inv_a_norm`) warn when the valid submatrix is
+ill-conditioned, which costs a full SVD on every call — often far more than the
+solve itself. Pass `cond_threshold=None` to skip the check and its SVD
+entirely; `cond_threshold=np.inf` only silences the warning. `lstsq` accepts
+`None` too, but gets its condition number from singular values it already has.
 
 - **[`solve(matrix, rhs, cond_threshold=1e12)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/solve/solve.py)** — Solve a linear system (vector or matrix rhs) restricted to valid rows/columns; NaN entries are returned for invalid positions
 - **[`lstsq(matrix, rhs, cond_threshold=1e12)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/solve/lstsq.py)** — Solve a least-squares system with NaN-aware row filtering; returns `(x, residuals, rank, sv)` consistent with `numpy.linalg.lstsq`
