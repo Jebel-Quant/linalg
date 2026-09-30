@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import warnings
+from collections.abc import Callable
 from typing import cast
 
 import numpy as np
@@ -88,13 +89,34 @@ def cholesky_solve(cov: Matrix, rhs: Vector | Matrix) -> Vector | Matrix:
         >>> cholesky_solve(np.array([[4.0, 0.0], [0.0, 9.0]]), np.array([8.0, 27.0])).tolist()
         [2.0, 3.0]
     """
+    return _factored_solver(cov)(rhs)
+
+
+def _factored_solver(cov: Matrix) -> Callable[[Vector | Matrix], Vector | Matrix]:
+    """Factorise *cov* once and return a function solving ``cov @ x = rhs``.
+
+    The returned solver follows :func:`cholesky_solve` -- Cholesky when *cov* is
+    positive-definite, LU otherwise -- but pays for the factorisation a single
+    time, so repeated solves against a fixed matrix cost ``O(n**2)`` each with
+    SciPy installed. Without SciPy each call is still an LU solve. A matrix that
+    is not positive-definite falls back to LU at call time, so a singular *cov*
+    raises :class:`numpy.linalg.LinAlgError` from the solver, not from here.
+
+    Args:
+        cov: A covariance matrix of shape (n, n).
+
+    Returns:
+        A function mapping a right-hand side of shape (n,) or (n, k) to the
+        solution of the same shape.
+    """
     try:
         if _HAVE_SCIPY:
-            return cast("Vector | Matrix", _cho_solve(_cho_factor(cov), rhs))
+            factor = _cho_factor(cov)
+            return lambda rhs: cast("Vector | Matrix", _cho_solve(factor, rhs))
         _cholesky(cov)  # raises LinAlgError unless cov is positive-definite
-        return cast("Vector | Matrix", np.linalg.solve(cov, rhs))
     except np.linalg.LinAlgError:
-        return cast("Vector | Matrix", np.linalg.solve(cov, rhs))
+        pass
+    return lambda rhs: cast("Vector | Matrix", np.linalg.solve(cov, rhs))
 
 
 def is_positive_definite(matrix: Matrix) -> bool:
