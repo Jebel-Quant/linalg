@@ -27,24 +27,24 @@ pip install 'cvx-linalg[ewm]'
 The entire public API is re-exported at the top level, so a flat import is all
 you ever need:
 
-```python
-from cvx.linalg import (
-    a_norm,
-    cholesky,
-    cholesky_solve,
-    cov_to_corr,
-    inv,
-    inv_a_norm,
-    is_positive_definite,
-    lstsq,
-    pca,
-    rand_cov,
-    solve,
-    valid,
-    GramOperator,
-    bordered_solve,
-)
-from cvx.linalg.covariance.ewm_cov import ewm_covariance  # requires the 'ewm' extra (polars)
+```pycon
+>>> from cvx.linalg import (
+...     a_norm,
+...     cholesky,
+...     cholesky_solve,
+...     cov_to_corr,
+...     inv,
+...     inv_a_norm,
+...     is_positive_definite,
+...     lstsq,
+...     pca,
+...     rand_cov,
+...     solve,
+...     valid,
+...     GramOperator,
+...     bordered_solve,
+... )
+>>> from cvx.linalg.covariance.ewm_cov import ewm_covariance  # requires the 'ewm' extra (polars)
 ```
 
 ### Everything is NaN-aware
@@ -63,30 +63,27 @@ Every function here instead restricts the computation to the valid sub-problem
 and returns `NaN` only where the input was missing — the same result on every
 platform:
 
-```python
-import numpy as np
+```pycon
+>>> import numpy as np
 
-from cvx.linalg import solve, valid
+>>> from cvx.linalg import solve, valid
 
-# A covariance matrix in which the second asset has no usable data.
-cov = np.array(
-    [
-        [4.0, 1.0, 0.0],
-        [1.0, np.nan, 1.0],
-        [0.0, 1.0, 9.0],
-    ]
-)
-rhs = np.array([8.0, 1.0, 18.0])
+>>> # A covariance matrix in which the second asset has no usable data.
+>>> cov = np.array(
+...     [
+...         [4.0, 1.0, 0.0],
+...         [1.0, np.nan, 1.0],
+...         [0.0, 1.0, 9.0],
+...     ]
+... )
+>>> rhs = np.array([8.0, 1.0, 18.0])
 
-mask, submatrix = valid(cov)
-print("valid assets     :", mask.tolist())
-print("clean submatrix  :", submatrix.tolist())
-print("cvx.linalg.solve :", solve(cov, rhs).tolist())
-```
-
-```result
+>>> mask, submatrix = valid(cov)
+>>> print("valid assets     :", mask.tolist())
 valid assets     : [True, False, True]
+>>> print("clean submatrix  :", submatrix.tolist())
 clean submatrix  : [[4.0, 0.0], [0.0, 9.0]]
+>>> print("cvx.linalg.solve :", solve(cov, rhs).tolist())
 cvx.linalg.solve : [2.0, nan, 2.0]
 ```
 
