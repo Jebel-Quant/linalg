@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import importlib
 import math
 import re
 import warnings
@@ -231,3 +232,62 @@ def test_check_and_warn_condition_none_threshold_skips_cond(monkeypatch: pytest.
     with warnings.catch_warnings():
         warnings.simplefilter("error", IllConditionedMatrixWarning)
         check_and_warn_condition(np.diag([1.0, 1e-14]), None)
+
+
+def _spd(n: int, seed: int = 0) -> np.ndarray:
+    """Return a well-conditioned random symmetric positive-definite matrix."""
+    a = np.random.default_rng(seed).standard_normal((n, n))
+    return a @ a.T + n * np.eye(n)
+
+
+def test_check_and_warn_condition_screen_skips_svd(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A well-conditioned SPD matrix is cleared by the LAPACK estimate without calling ``cond``."""
+
+    def fail(*_args: object) -> float:
+        """Stand in for ``cond``; any call fails the test."""
+        raise AssertionError("cond() called for a well-conditioned SPD matrix")  # noqa: TRY003
+
+    monkeypatch.setattr("cvx.linalg.core.exceptions.cond", fail)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", IllConditionedMatrixWarning)
+        check_and_warn_condition(_spd(20), DEFAULT_COND_THRESHOLD)
+
+
+@pytest.mark.parametrize(
+    "matrix",
+    [
+        pytest.param(np.array([[1.0, 2.0], [0.0, 1.0]]), id="non-symmetric"),
+        pytest.param(np.array([[1.0, 0.0], [0.0, -1.0]]), id="indefinite"),
+        pytest.param(np.array([[1.0, np.inf], [np.inf, 1.0]]), id="non-finite"),
+        pytest.param(np.diag([1.0, 1e-8]), id="estimate-too-close"),
+    ],
+)
+def test_certainly_within_not_proven(matrix: np.ndarray) -> None:
+    """The screen declines to vouch for matrices it cannot bound, leaving them to the exact check."""
+    exceptions = importlib.import_module("cvx.linalg.core.exceptions")
+    assert not exceptions._certainly_within(matrix, 1e8)
+
+
+def test_certainly_within_without_scipy(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Without SciPy the screen never vouches, so the exact check always runs."""
+    exceptions = importlib.import_module("cvx.linalg.core.exceptions")
+    monkeypatch.setattr(exceptions, "_HAVE_SCIPY", False)
+    assert not exceptions._certainly_within(np.eye(3), DEFAULT_COND_THRESHOLD)
+
+
+@pytest.mark.parametrize("have_scipy", [True, False])
+def test_check_and_warn_condition_same_verdict_both_paths(monkeypatch: pytest.MonkeyPatch, have_scipy: bool) -> None:
+    """With or without the screen, the warning fires exactly when the 2-norm condition number exceeds threshold."""
+    exceptions = importlib.import_module("cvx.linalg.core.exceptions")
+    monkeypatch.setattr(exceptions, "_HAVE_SCIPY", have_scipy)
+    rng = np.random.default_rng(7)
+    for _ in range(50):
+        n = int(rng.integers(2, 30))
+        q, _ = np.linalg.qr(rng.standard_normal((n, n)))
+        matrix = (q * np.logspace(0, rng.uniform(0, 12), n)) @ q.T
+        matrix = (matrix + matrix.T) / 2
+        threshold = 10.0 ** rng.uniform(0, 12)
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            check_and_warn_condition(matrix, threshold)
+        assert bool(caught) == (np.linalg.cond(matrix) > threshold)

@@ -29,7 +29,7 @@ ewm = [
     "polars>=1.40.0",
 ]
 scipy = [
-    "scipy>=1.11.0",  # cholesky_solve: triangular solves on the factor instead of an LU solve
+    "scipy>=1.11.0",  # cholesky_solve: triangular solves on the factor; check_and_warn_condition: pocon screen instead of an SVD
 ]
 
 [project.urls]
