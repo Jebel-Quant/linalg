@@ -29,6 +29,32 @@ def test_factor_operator_matches_dense() -> None:
     check_against_dense(FactorOperator(d, u, delta), a, rng)
 
 
+def test_factor_operator_inverts_inner_once(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Delta^{-1} is computed on the first solve and reused by later ones."""
+    rng = np.random.default_rng(11)
+    d = rng.uniform(1.0, 2.0, 6)
+    u = rng.standard_normal((6, 2))
+    delta = np.array([[2.0, 0.3], [0.3, 1.0]])
+    op = FactorOperator(d, u, delta)
+    dense = np.diag(d) + u @ delta @ u.T
+
+    calls = 0
+    real_solve = np.linalg.solve
+
+    def counting_solve(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+        """Count solves against Delta, then delegate to NumPy."""
+        nonlocal calls
+        if a is delta:
+            calls += 1
+        return real_solve(a, b)
+
+    monkeypatch.setattr(np.linalg, "solve", counting_solve)
+    for free in (np.array([0, 1, 2]), np.array([1, 3, 4, 5])):
+        rhs = rng.standard_normal(free.size)
+        np.testing.assert_allclose(dense[np.ix_(free, free)] @ op.solve_free(free, rhs), rhs, atol=1e-10)
+    assert calls == 1
+
+
 def test_factor_operator_n_property() -> None:
     """FactorOperator reports the dimension it acts on."""
     assert FactorOperator(np.ones(5), np.ones((5, 2)), np.eye(2)).n == 5

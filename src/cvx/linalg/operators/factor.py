@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import cast
+
 import numpy as np
 
 from ..core.exceptions import DimensionMismatchError, NonSquareMatrixError, NotAMatrixError
@@ -79,6 +81,7 @@ class FactorOperator(SymmetricOperator):
         self._d = d
         self._u = u
         self._delta = delta
+        self._delta_inv: Matrix | None = None
 
     @property
     def n(self) -> int:
@@ -125,12 +128,17 @@ class FactorOperator(SymmetricOperator):
         # Woodbury: A_FF^{-1} = D^{-1} - D^{-1} U W^{-1} U.T D^{-1},
         # with W = Delta^{-1} + U.T D^{-1} U.
         dinv_rhs = (np.asarray(rhs, dtype=np.float64).T / df).T
-        delta_inv = np.linalg.solve(self._delta, np.eye(self._delta.shape[0]))
-        w = delta_inv + uf.T @ ((uf.T / df).T)
+        w = self._inner_inverse() + uf.T @ ((uf.T / df).T)
         inner = cholesky_solve(w, uf.T @ dinv_rhs)
         correction = (uf @ inner).T / df
         result: Vector | Matrix = dinv_rhs - correction.T
         return result
+
+    def _inner_inverse(self) -> Matrix:
+        """Return ``Delta^{-1}``, computed on the first solve and cached (``Delta`` is fixed)."""
+        if self._delta_inv is None:
+            self._delta_inv = cast("Matrix", np.linalg.solve(self._delta, np.eye(self._delta.shape[0])))
+        return self._delta_inv
 
     def rcond_free(self, free: object) -> float:
         """Lower bound on the free block's reciprocal condition number, via Weyl's inequalities.
