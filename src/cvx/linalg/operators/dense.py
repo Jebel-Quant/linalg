@@ -2,18 +2,25 @@
 
 :class:`DenseOperator` wraps an explicit ``n x n`` matrix and slices it directly.
 :class:`IncrementalDenseOperator` specialises it for active-set sweeps, maintaining
-the free-block inverse across single-index changes with rank-one bordered / deletion
-updates instead of refactorising each step.
+the free-block inverse across single-index changes with in-place rank-one bordered /
+deletion updates instead of refactorising each step.
 """
 
 from __future__ import annotations
 
 import numpy as np
 
-from ..core.exceptions import NonSquareMatrixError, NotAMatrixError
+from ..core.exceptions import DimensionMismatchError, NonSquareMatrixError, NotAMatrixError
 from ..core.types import Matrix, Vector
 from ..decomposition.cholesky import cholesky_solve
 from .base import SymmetricOperator, as_index, rcond_symmetric
+
+try:  # BLAS ``ger`` applies the rank-one updates in place, with no k x k temporary.
+    from scipy.linalg.blas import get_blas_funcs as _get_blas_funcs  # type: ignore[import-untyped]
+
+    _HAVE_SCIPY = True
+except ImportError:  # pragma: no cover - depends on the environment; the fallback is tested by patching the flag
+    _HAVE_SCIPY = False
 
 
 class DenseOperator(SymmetricOperator):
@@ -84,17 +91,23 @@ class IncrementalDenseOperator(DenseOperator):
     """Dense operator that maintains ``A[free, free]^{-1}`` across single-index flips.
 
     A drop-in :class:`DenseOperator` whose :meth:`solve_free` reuses the previous
-    free-block inverse when the free set changed by exactly one index since the last
+    free-block inverse when the free set changed by at most one index since the last
     call, updating it with a rank-one bordered (index added) or deletion (index
-    removed) formula at ``O(len(free)**2)`` instead of refactorising at
-    ``O(len(free)**3)``. Any other change -- the first solve, a multi-index change,
-    or a non-positive/non-finite pivot -- recomputes the inverse from scratch.
+    removed) formula at ``O(n * len(free))`` instead of refactorising at
+    ``O(len(free)**3)``. Any other change -- a multi-index change, or a
+    non-positive/non-finite pivot -- recomputes the inverse from scratch.
+
+    The inverse is kept in *insertion order* in the leading block of a preallocated
+    ``n x n`` Fortran-ordered buffer (allocated on the first solve), so an update
+    never copies or permutes the whole block: an insert appends a border row and
+    column, and a delete swaps the leaving slot with the last one. With SciPy
+    installed the rank-one term is applied in place by BLAS ``ger``; without it, by
+    NumPy with one ``k x k`` temporary.
 
     This suits an active-set loop that changes its free set one index at a time. The
-    free index arrays must be **ascending** (as produced by ``np.flatnonzero`` of a
-    boolean mask) and *rhs* aligned to that order; the maintained inverse and the
-    returned solution follow the same order. :meth:`matvec`, :meth:`block_matvec`, and
-    :meth:`rcond_free` are the plain dense ones -- only :meth:`solve_free` differs.
+    free indices may come in any order; *rhs* is aligned to that order, and so is the
+    returned solution. :meth:`matvec`, :meth:`block_matvec`, and :meth:`rcond_free`
+    are the plain dense ones -- only :meth:`solve_free` differs.
 
     A maintained inverse accumulates rounding over the ``O(n)`` updates of a sweep, so
     on ill-conditioned problems the plain :class:`DenseOperator` (a clean solve each
@@ -111,70 +124,103 @@ class IncrementalDenseOperator(DenseOperator):
     def __init__(self, matrix: Matrix) -> None:
         """Wrap ``matrix`` (validated as in :class:`DenseOperator`) and start with no cache."""
         super().__init__(matrix)
-        self._free_idx: np.ndarray | None = None
-        self._inv: Matrix | None = None
+        n = self.n
+        self._range = np.arange(n, dtype=np.intp)  # bounds-checks and normalises free indices
+        self._order = np.empty(n, dtype=np.intp)  # index held in each slot
+        self._slot = np.full(n, -1, dtype=np.intp)  # slot of each index, -1 when not free
+        self._k = 0  # number of occupied slots
+        self._buf: Matrix = np.empty((0, 0), order="F")  # inverse in slot order in its leading k x k block
 
     def solve_free(self, free: object, rhs: Vector | Matrix) -> Vector | Matrix:
         """Solve ``A[free, free] @ y = rhs`` using the maintained (incrementally updated) inverse."""
-        cur = as_index(free)
-        inv = self._inverse_for(cur)
-        self._free_idx, self._inv = cur, inv
-        return inv @ rhs
+        cur = self._range[as_index(free)]
+        rhs = np.asarray(rhs)
+        if rhs.ndim == 0 or rhs.shape[0] != cur.size:
+            raise DimensionMismatchError(rhs.shape[0] if rhs.ndim else rhs.size, cur.size)
+        if self._buf.shape[0] != self.n:  # allocated on the first solve
+            self._buf = np.zeros((self.n, self.n), order="F")
+        if not self._update(cur):
+            self._refactor(cur)
+        pos = self._slot[cur]
+        rhs_slot = np.empty(rhs.shape, dtype=np.result_type(rhs, self._buf))
+        rhs_slot[pos] = rhs
+        solution: Vector | Matrix = (self._buf[: self._k, : self._k] @ rhs_slot)[pos]
+        return solution
 
-    def _inverse_for(self, cur: np.ndarray) -> Matrix:
-        """Return ``A[cur, cur]^{-1}``, updating the cache incrementally when possible."""
-        prev, prev_inv = self._free_idx, self._inv
-        if prev is None or prev_inv is None:
-            return self._refactor(cur)
-        updated = self._single_flip_update(prev, prev_inv, cur)
-        return updated if updated is not None else self._refactor(cur)
+    def _update(self, cur: np.ndarray) -> bool:
+        """Bring the cache from the held free set to *cur* by at most one update (``False`` if it cannot)."""
+        n_held = int(np.count_nonzero(self._slot[cur] >= 0))
+        n_added, n_removed = cur.size - n_held, self._k - n_held
+        if n_added == 0 and n_removed == 0:
+            return True
+        if n_added == 1 and n_removed == 0:
+            return self._insert(int(cur[self._slot[cur] < 0][0]))
+        if n_added == 0 and n_removed == 1:
+            held = self._order[: self._k]
+            keep = np.zeros(self.n, dtype=bool)
+            keep[cur] = True
+            return self._delete(int(held[~keep[held]][0]))
+        return False  # not a single-index flip; recompute
 
-    def _single_flip_update(self, prev: np.ndarray, prev_inv: Matrix, cur: np.ndarray) -> Matrix | None:
-        """Rank-one update for a one-index change from *prev* to *cur* (``None`` otherwise)."""
-        added = np.setdiff1d(cur, prev, assume_unique=True)
-        removed = np.setdiff1d(prev, cur, assume_unique=True)
-        if added.size == 1 and removed.size == 0:
-            return self._insert(prev, prev_inv, int(added[0]), cur)
-        if removed.size == 1 and added.size == 0:
-            return self._delete(prev, prev_inv, int(removed[0]))
-        return None  # not a single-index flip; recompute
+    def _refactor(self, cur: np.ndarray) -> None:
+        """Invert ``A[cur, cur]`` from scratch into slots ``0..len(cur)-1``, in *cur* order."""
+        k = cur.size
+        inv = np.linalg.inv(self._a[np.ix_(cur, cur)])  # may raise: leave the cache intact
+        self._slot[self._order[: self._k]] = -1
+        self._order[:k] = cur
+        self._slot[cur] = self._range[:k]
+        self._k = k
+        self._block()[:] = inv
 
-    def _refactor(self, cur: np.ndarray) -> Matrix:
-        """Invert ``A[cur, cur]`` from scratch."""
-        if cur.size == 0:
-            return np.zeros((0, 0))
-        inv: Matrix = np.linalg.inv(self._a[np.ix_(cur, cur)])
-        return inv
+    def _block(self) -> Matrix:
+        """The leading ``k x k`` block of the buffer: the maintained inverse in slot order."""
+        block: Matrix = self._buf[: self._k, : self._k]
+        return block
 
-    def _insert(self, prev: np.ndarray, prev_inv: Matrix, asset: int, cur: np.ndarray) -> Matrix | None:
-        """Rank-one bordered update for one index entering the free set (``None`` if the pivot is bad)."""
-        c = self._a[prev, asset]
-        v = prev_inv @ c
+    def _rank_one(self, alpha: float, x: Vector) -> None:
+        """Add ``alpha * outer(x, x)`` to the leading ``len(x) x len(x)`` block of the buffer, in place."""
+        m = x.shape[0]
+        buf = self._buf
+        if m == 0:
+            return
+        if _HAVE_SCIPY:
+            # buf[:, :m] is Fortran-contiguous, so ger updates it in place; buf[:m, :m] is
+            # not, and ger would copy it. Zero-padding x leaves rows m.. unchanged.
+            padded = np.zeros(self.n)
+            padded[:m] = x
+            ger = _get_blas_funcs("ger", (buf,))
+            ger(alpha, padded, x, a=buf[:, :m], overwrite_a=True)
+        else:
+            block = buf[:m, :m]
+            block += alpha * np.outer(x, x)
+
+    def _insert(self, asset: int) -> bool:
+        """Rank-one bordered update for one index entering the free set (``False`` if the pivot is bad)."""
+        k = self._k
+        c = self._a[self._order[:k], asset]
+        v = self._block() @ c
         schur = float(self._a[asset, asset] - c @ v)
         if not np.isfinite(schur) or schur <= 0.0:
-            return None
-        k = prev.shape[0]
-        aug = np.empty((k + 1, k + 1))
-        aug[:k, :k] = prev_inv + np.outer(v, v) / schur
-        aug[:k, k] = -v / schur
-        aug[k, :k] = -v / schur
-        aug[k, k] = 1.0 / schur
-        # ``aug`` is ordered [prev..., asset]; permute to ascending ``cur`` order.
-        perm = np.empty(k + 1, dtype=np.intp)
-        is_new = cur == asset
-        perm[is_new] = k
-        perm[~is_new] = np.searchsorted(prev, cur[~is_new])
-        permuted: Matrix = aug[np.ix_(perm, perm)]
-        return permuted
+            return False
+        self._rank_one(1.0 / schur, v)
+        buf = self._buf
+        buf[:k, k] = buf[k, :k] = -v / schur
+        buf[k, k] = 1.0 / schur
+        self._order[k], self._slot[asset], self._k = asset, k, k + 1
+        return True
 
-    def _delete(self, prev: np.ndarray, prev_inv: Matrix, asset: int) -> Matrix | None:
-        """Rank-one deletion update for one index leaving the free set (``None`` if the pivot is bad)."""
-        p = int(np.searchsorted(prev, asset))
-        pivot = float(prev_inv[p, p])
+    def _delete(self, asset: int) -> bool:
+        """Rank-one deletion update for one index leaving the free set (``False`` if the pivot is bad)."""
+        block = self._block()
+        p, last = int(self._slot[asset]), self._k - 1
+        pivot = float(block[p, p])
         if not np.isfinite(pivot) or pivot <= 0.0:
-            return None
-        mask = np.ones(prev.shape[0], dtype=bool)
-        mask[p] = False
-        col = prev_inv[mask, p]
-        updated: Matrix = prev_inv[np.ix_(mask, mask)] - np.outer(col, col) / pivot
-        return updated
+            return False
+        if p != last:  # move the index in the last slot into slot p
+            block[[p, last], :] = block[[last, p], :]
+            block[:, [p, last]] = block[:, [last, p]]
+            moved = self._order[last]
+            self._order[p], self._slot[moved] = moved, p
+        self._rank_one(-1.0 / pivot, block[:last, last].copy())
+        self._slot[asset], self._k = -1, last
+        return True
