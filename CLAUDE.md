@@ -86,7 +86,7 @@ holds the dense-reference checks shared by the per-backend files.
 Two deliberate deviations from Rhiza's bundled `check_test_layout.py`. Both are
 declared in `[tool.check_test_layout]` in `pyproject.toml` (`enforce = false`
 plus a `reason`), so the checker reports the layout as intentional instead of as
-53 violations — do not "fix" it by reshuffling the suite:
+violations — do not "fix" it by reshuffling the suite:
 
 - **Test root drops the `cvx` namespace.** Tests live under `tests/linalg/…`,
   not `tests/cvx/linalg/…`; there is a single top-level package, so the extra
@@ -96,9 +96,10 @@ plus a `reason`), so the checker reports the layout as intentional instead of as
   Tests are free functions, not classes mirroring each source class. A few files
   cover behaviour that spans modules and intentionally have no 1:1 source
   counterpart: `test_property.py` (hypothesis properties), `test_package.py`
-  (packaging/`__version__`), and `test_marimo_notebooks_layout.py`.
+  (packaging/`__version__`), `test_marimo_notebooks_layout.py`, and
+  `tests/test_readme.py` (runs the README's `pycon` examples).
 
-Note that `--src src/cvx` resolves only the first deviation: 16 of the remaining
+Note that `--src src/cvx` resolves only the first deviation: the remaining
 violations are missing `Test<Class>` wrappers, which the function-style
 convention deliberately does not have. Per-module reach is guaranteed by the
 full line-and-branch coverage gate rather than by file mirroring.
