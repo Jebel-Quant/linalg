@@ -5,6 +5,17 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com),
 and entries are generated from [Conventional Commits](https://www.conventionalcommits.org).
 
+## [1.1.2] - 2026-10-01
+
+### Documentation
+- Bring the README in line with the public API (#188)
+- List test_readme.py as a cross-cutting test-layout exception (#195) (#196)
+
+### Maintenance
+- Require every cvx.linalg export to appear in the README (#190) (#193)
+- Execute the README pycon examples (#189) (#192)
+- *(core)* Move condition-number helpers into core/condition.py (#191) (#194)
+
 ## [1.1.1] - 2026-09-30
 
 ### Performance
