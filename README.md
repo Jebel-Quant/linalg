@@ -22,6 +22,15 @@ The `ewm_covariance` function requires the optional [Polars](https://pola.rs) de
 pip install 'cvx-linalg[ewm]'
 ```
 
+The optional [SciPy](https://scipy.org) extra makes `cholesky_solve` use
+triangular solves on the Cholesky factor and lets the condition-number check
+screen with a cheap LAPACK estimate instead of a full SVD (see
+[Solvers](#solvers-cvxlinalgsolve)):
+
+```bash
+pip install 'cvx-linalg[scipy]'
+```
+
 ## Usage
 
 The entire public API is re-exported at the top level, so a flat import is all
@@ -121,8 +130,9 @@ requires the optional `polars` dependency.
 
 - **[`Matrix`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/core/types.py)** — Type alias for a 2-D `numpy.ndarray` with `float64` dtype
 - **[`Vector`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/core/types.py)** — Type alias for a 1-D `numpy.ndarray` with `float64` dtype
+- **[`SupportsMatvec`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/core/types.py)** — Structural protocol for a matrix-free operator: anything exposing a dimension `n` and `matvec(x) -> A @ x` (every `SymmetricOperator` conforms)
 
-The package ships a `py.typed` marker; all public signatures are precisely annotated and verified with [ty](https://github.com/astral-sh/ty) in CI.
+The package ships a `py.typed` marker; all public signatures are precisely annotated and verified with [ty](https://github.com/astral-sh/ty) and `mypy --strict` in CI.
 
 ### Exceptions & Warnings
 
@@ -152,7 +162,7 @@ All exceptions and warnings live in [`core/exceptions.py`](https://github.com/Je
 - **[`eigh(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/decomposition/eigh.py)** — Eigenvalues/eigenvectors of the valid symmetric/Hermitian submatrix in ascending eigenvalue order
 - **[`eigvalsh(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/decomposition/eigh.py)** — Eigenvalues-only convenience wrapper around `eigh`
 - **[`eigvals(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/decomposition/eigvals.py)** — Eigenvalues of a general square matrix (supports complex output for non-symmetric matrices)
-- **[`power_iteration(matrix, n_iter=1000, tol=1e-9, seed=None)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/decomposition/power_iteration.py)** — Estimate the dominant (largest-magnitude) eigenpair of a symmetric matrix via power iteration
+- **[`power_iteration(operator, *, n=None, n_iter=1000, tol=1e-9, seed=None)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/decomposition/power_iteration.py)** — Estimate the dominant (largest-magnitude) eigenpair of a symmetric operator; accepts a dense array, any `SymmetricOperator`, or a callable `v -> A @ v` plus `n`, so it runs matrix-free
 - **[`qr(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/decomposition/qr.py)** — Reduced QR decomposition, matching `np.linalg.qr(mode='reduced')`
 - **[`svd(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/decomposition/svd.py)** — Raw compact singular value decomposition via `np.linalg.svd(full_matrices=False)`
 - **[`svd_k(matrix, k)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/decomposition/svd.py)** — Exact truncated rank-`k` SVD (the best rank-`k` approximation; leading triplets of the compact SVD)
@@ -191,11 +201,11 @@ rank-deficient free blocks and `restricted(free)` for a pre-sliced free-block
 view), and the backends implement it at very different cost:
 
 - **[`SymmetricOperator`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/operators/base.py)** — Protocol exposing a symmetric matrix through `matvec`, `block_matvec`, `solve_free`, `apply_free`, `rcond_free`, `restricted`, and `diag`
-- **[`DenseOperator`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/operators/dense.py)** — Backend wrapping an explicit dense `n x n` matrix
-- **[`IncrementalDenseOperator`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/operators/dense.py)** — `DenseOperator` maintaining the free-block inverse across single-index flips for active-set sweeps
-- **[`GramOperator`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/operators/gram.py)** — Matrix-free backend for `A = M.T @ M`, represented by its factor `M`; never forms the Gram matrix
-- **[`FactorOperator`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/operators/factor.py)** — Diagonal-plus-low-rank backend `A = diag(d) + U @ Delta @ U.T` with Woodbury free-block solves
-- **[`SumOperator`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/operators/composite.py)** — Weighted sum of symmetric operators (forward-only; feed `apply_free` to a Krylov solver)
+- **[`DenseOperator(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/operators/dense.py)** — Backend wrapping an explicit dense `n x n` matrix
+- **[`IncrementalDenseOperator(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/operators/dense.py)** — `DenseOperator` maintaining the free-block inverse across single-index flips for active-set sweeps
+- **[`GramOperator(factor, ridge=0.0)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/operators/gram.py)** — Matrix-free backend for `A = M.T @ M + ridge * I`, represented by its factor `M`; never forms the Gram matrix. `GramOperator.regularized(factor, alpha, root)` builds the shrinkage target `(1 - alpha) M.T M + alpha R.T R` as a stacked-factor Gram operator
+- **[`FactorOperator(diagonal, loadings, inner)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/operators/factor.py)** — Diagonal-plus-low-rank backend `A = diag(d) + U @ Delta @ U.T` with Woodbury free-block solves
+- **[`SumOperator(terms)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/operators/composite.py)** — Weighted sum of symmetric operators (forward-only; feed `apply_free` to a Krylov solver)
 
 ## Constrained solves (`cvx.linalg.kkt`)
 
@@ -215,7 +225,8 @@ is everything importable from `cvx.linalg` (plus `cvx.linalg.covariance.ewm_cov`
   emit a `DeprecationWarning` in the meantime (currently: the two-argument
   `cholesky(cov, rhs)` form — use `cholesky_solve` — slated for removal in 2.0).
 - **Supported environments:** Python 3.11–3.14, NumPy ≥ 2.0. The optional
-  `ewm` extra requires Polars ≥ 1.40.
+  `ewm` extra requires Polars ≥ 1.40; the optional `scipy` extra requires
+  SciPy ≥ 1.11.
 
 Numerical conventions (NaN handling, condition-number warnings, dtype
 contract) are documented in
