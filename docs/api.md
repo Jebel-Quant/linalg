@@ -61,7 +61,7 @@ from cvx.linalg.covariance.ewm_cov import ewm_covariance  # requires the 'ewm' e
 
 ::: cvx.linalg.norm.norm.inv_a_norm
 
-::: cvx.linalg.core.exceptions.cond
+::: cvx.linalg.core.condition.cond
 
 ::: cvx.linalg.solve.det.det
 
@@ -101,11 +101,11 @@ from cvx.linalg.covariance.ewm_cov import ewm_covariance  # requires the 'ewm' e
 
 ::: cvx.linalg.core.exceptions.InvalidComponentsError
 
-::: cvx.linalg.core.exceptions.check_and_warn_condition
+::: cvx.linalg.core.condition.check_and_warn_condition
 
-::: cvx.linalg.core.exceptions.warn_ill_conditioned
+::: cvx.linalg.core.condition.warn_ill_conditioned
 
-::: cvx.linalg.core.exceptions.DEFAULT_COND_THRESHOLD
+::: cvx.linalg.core.condition.DEFAULT_COND_THRESHOLD
 
 ---
 

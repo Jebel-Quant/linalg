@@ -121,9 +121,9 @@ requires the optional `polars` dependency.
 ## Core (`cvx.linalg.core`)
 
 - **[`valid(matrix)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/core/valid.py)** — Return a boolean mask and valid submatrix by removing rows/columns with non-finite diagonal entries
-- **[`cond(matrix, p=None)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/core/exceptions.py)** — Condition number of a matrix (NaN-aware); accepts the same `p` norm values as `numpy.linalg.cond`
-- **[`check_and_warn_condition(matrix, threshold)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/core/exceptions.py)** — Emit `IllConditionedMatrixWarning` when the condition number exceeds the threshold; `threshold=None` skips the check (and its SVD) entirely
-- **[`warn_ill_conditioned(cond_value, threshold)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/core/exceptions.py)** — Emit `IllConditionedMatrixWarning` for an already-computed condition number; `threshold=None` never warns
+- **[`cond(matrix, p=None)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/core/condition.py)** — Condition number of a matrix (NaN-aware); accepts the same `p` norm values as `numpy.linalg.cond`
+- **[`check_and_warn_condition(matrix, threshold)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/core/condition.py)** — Emit `IllConditionedMatrixWarning` when the condition number exceeds the threshold; `threshold=None` skips the check (and its SVD) entirely
+- **[`warn_ill_conditioned(cond_value, threshold)`](https://github.com/Jebel-Quant/linalg/blob/main/src/cvx/linalg/core/condition.py)** — Emit `IllConditionedMatrixWarning` for an already-computed condition number; `threshold=None` never warns
 - **`DEFAULT_COND_THRESHOLD`** — Default condition-number threshold (`1e12`) used by the ill-conditioning checks
 
 ### Types

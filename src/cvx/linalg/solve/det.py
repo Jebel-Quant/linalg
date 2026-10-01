@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import numpy as np
 
-from ..core.exceptions import DEFAULT_COND_THRESHOLD, NonSquareMatrixError
-from ..core.exceptions import check_and_warn_condition as _check_and_warn_condition
+from ..core.condition import DEFAULT_COND_THRESHOLD
+from ..core.condition import check_and_warn_condition as _check_and_warn_condition
+from ..core.exceptions import NonSquareMatrixError
 from ..core.types import Matrix
 from ..core.valid import valid
 

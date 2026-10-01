@@ -147,7 +147,7 @@ def test_solve_none_threshold_skips_condition_check(monkeypatch: pytest.MonkeyPa
         """Stand in for ``cond``; any call fails the test."""
         raise AssertionError("cond() called despite cond_threshold=None")  # noqa: TRY003
 
-    monkeypatch.setattr("cvx.linalg.core.exceptions.cond", fail)
+    monkeypatch.setattr("cvx.linalg.core.condition.cond", fail)
     matrix = np.diag([1.0, 1e-14])  # condition number 1e14, above the default threshold
     with warnings.catch_warnings():
         warnings.simplefilter("error", IllConditionedMatrixWarning)

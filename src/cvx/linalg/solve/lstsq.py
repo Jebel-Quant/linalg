@@ -5,8 +5,9 @@ from __future__ import annotations
 import numpy as np
 import numpy.typing as npt
 
-from ..core.exceptions import DEFAULT_COND_THRESHOLD, DimensionMismatchError
-from ..core.exceptions import warn_ill_conditioned as _warn_ill_conditioned
+from ..core.condition import DEFAULT_COND_THRESHOLD
+from ..core.condition import warn_ill_conditioned as _warn_ill_conditioned
+from ..core.exceptions import DimensionMismatchError
 from ..core.types import Matrix, Vector
 
 
