@@ -5,6 +5,18 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com),
 and entries are generated from [Conventional Commits](https://www.conventionalcommits.org).
 
+## [1.1.3] - 2026-11-04
+
+### Maintenance
+- Chore(deps-dev)(deps-dev): bump the python-dependencies group with 2 updates (#198)
+- Chore(deps)(deps): bump the github-actions group with 2 updates (#200)
+- Chore(deps-dev)(deps-dev): bump hypothesis (#199)
+- Chore(deps-dev)(deps-dev): bump hypothesis (#201)
+- Chore(deps)(deps): bump the github-actions group with 7 updates (#202)
+- Chore(deps)(deps): bump the github-actions group with 9 updates (#203)
+- Chore(deps-dev)(deps-dev): bump the python-dependencies group with 3 updates (#204)
+- Chore(deps-dev)(deps-dev): bump the python-dependencies group with 2 updates (#205)
+
 ## [1.1.2] - 2026-10-01
 
 ### Documentation
